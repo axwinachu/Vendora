@@ -13,12 +13,12 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http.authorizeHttpRequests(req-> req.requestMatchers("/auth/**").permitAll().anyRequest().authenticated())
-                .csrf(AbstractHttpConfigurer::disable)
+        return http.csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .httpBasic(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(req-> req.requestMatchers("/auth/**").permitAll()
+                        .anyRequest().authenticated())
                 .formLogin(AbstractHttpConfigurer::disable)
-                .build();
+                .httpBasic(AbstractHttpConfigurer::disable).build();
     }
     @Bean
     PasswordEncoder passwordEncoder(){
