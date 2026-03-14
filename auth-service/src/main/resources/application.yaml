@@ -1,7 +1,9 @@
 spring:
   application:
     name: auth-service
-
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
   datasource:
     url: jdbc:mysql://localhost:3306/vendora_db
     username: root
@@ -20,7 +22,7 @@ spring:
     host: smtp.gmail.com
     port: 587
     username: aswindev2465@gmail.com
-    password: iyakblfaxoyfwdmcabc
+    password: iyakblfaxoyfwdmcsw
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true

@@ -1,5 +1,7 @@
 package com.vendora.auth_service.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vendora.auth_service.dto.PendingUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -12,6 +14,8 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class OtpService {
     private final RedisTemplate<String,String> redisTemplate;
+    private final ObjectMapper objectMapper;
+    private static final long OTP_TTL_MINUTES = 5;
     public String generateOtp(){
         Random random=new Random();
 
@@ -22,6 +26,25 @@ public class OtpService {
     public void storeOtp(String email,String otp){
         redisTemplate.opsForValue()
                 .set("OTP:"+email,otp,5, TimeUnit.MINUTES);
+    }
+    public void storePendingUser(PendingUser pendingUser){
+        try {
+            String json= objectMapper.writeValueAsString(pendingUser);
+            redisTemplate.opsForValue().set("PENDING:"+pendingUser.getEmail(),json,OTP_TTL_MINUTES,TimeUnit.MINUTES);
+        }catch (Exception ex){
+            throw new RuntimeException("failed store pending user");
+        }
+    }
+    public PendingUser getPendingUser(String email){
+        String json=redisTemplate.opsForValue().get("PENDING:"+ email);
+        if(Objects.isNull(json)){
+            throw new RuntimeException("Registration session expired please.Please signup again");
+        }
+        try {
+            return objectMapper.readValue(json, PendingUser.class);
+        }catch (Exception ex){
+            throw new RuntimeException("Failed to read pending user data");
+        }
     }
     public boolean validateOtp(String email,String otp){
 
@@ -38,5 +61,8 @@ public class OtpService {
 
     public void deleteOtp(String email){
         redisTemplate.delete("OTP:"+email);
+    }
+    public void deletePendingUser(String email){
+        redisTemplate.opsForValue().decrement("PENDING"+email);
     }
 }
