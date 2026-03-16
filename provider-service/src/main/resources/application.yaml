@@ -1,18 +1,21 @@
+server:
+  port: 8083
 spring:
   application:
-    name: user-service
+    name: provider-service
+
   datasource:
     url: jdbc:mysql://localhost:3306/vendora_db
     username: root
     password: 2465
-
+    driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
+        dialect: org.hibernate.dialect.MySQL8Dialect
         format_sql: true
     open-in-view: false
 
@@ -20,7 +23,7 @@ spring:
     multipart:
       enabled: true
       max-file-size: 5MB
-      max-request-size: 5MB
+      max-request-size: 20MB
 
   jackson:
     serialization:
@@ -29,7 +32,7 @@ spring:
 cloudinary:
   cloud-name: djr53cjzj
   api-key: 673629329379178
-  api-secret: 7wU1QpHLEbDF-ZP5bVLMYk4ENRw
+  api-secret: 7wU1QpHLEbDF-ZP5bVLMYk4ENRwa
 
 eureka:
   client:
@@ -37,3 +40,4 @@ eureka:
       defaultZone: http://localhost:8761/eureka/
   instance:
     prefer-ip-address: true
+
