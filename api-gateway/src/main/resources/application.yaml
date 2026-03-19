@@ -7,14 +7,35 @@ spring:
 
   cloud:
     gateway:
-      discovery:
-        locator:
-          enabled: true
-          lower-case-service-id: true
+      server:
+        webflux:
+          discovery:
+            locator:
+              enabled: true
+
+          routes:
+            - id: auth-service
+              uri: lb://auth-service
+              predicates:
+                - Path=/auth/**
+
+            - id: user-service
+              uri: lb://user-service
+              predicates:
+                - Path=/user/**
+              filters:
+                - name: JwtAuthFilter
+
+            - id: provider-service
+              uri: lb://provider-service
+              predicates:
+                - Path=/provider/**
 
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka
-
-
+  instance:
+    prefer-ip-address: true
+jwt:
+  secret: vendora-super-secret-key-for-jwt-authentication-123456

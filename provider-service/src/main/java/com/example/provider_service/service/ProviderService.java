@@ -50,7 +50,7 @@ public class ProviderService {
     }
 
     public List<Provider> findByDistrictAndCategory(District district, ServiceCategory category){
-        return providerRepository.findBYDistrictAndServiceCategory(district,category);
+        return providerRepository.findByDistrictAndServiceCategory(district,category);
     }
 
     public List<Provider> findTopRatedByDistrict(District district,ServiceCategory category){
@@ -117,6 +117,6 @@ public class ProviderService {
     }
 
     public List<Provider> getByProviderStatus(ProviderStatus status){
-        return providerRepository.findByProviderStatus(status);
+        return providerRepository.findByStatus(status);
     }
 }

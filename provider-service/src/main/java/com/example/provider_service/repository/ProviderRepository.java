@@ -24,9 +24,9 @@ public interface ProviderRepository extends JpaRepository<Provider,String> {
 
     List<Provider> findByServiceCategory(ServiceCategory category);
 
-    List<Provider> findByProviderStatus(ProviderStatus status);
+    List<Provider> findByStatus(ProviderStatus status);
 
-    List<Provider> findBYDistrictAndServiceCategory(District district,ServiceCategory serviceCategory);
+    List<Provider> findByDistrictAndServiceCategory(District district,ServiceCategory serviceCategory);
 
     List<Provider> findByDistrictAndStatusOrderByAverageRatingDesc(
             District district, ProviderStatus status);

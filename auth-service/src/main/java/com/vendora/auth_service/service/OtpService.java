@@ -3,6 +3,7 @@ package com.vendora.auth_service.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vendora.auth_service.dto.PendingUser;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -11,6 +12,7 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class OtpService {
     private final RedisTemplate<String,String> redisTemplate;
@@ -63,6 +65,7 @@ public class OtpService {
         redisTemplate.delete("OTP:"+email);
     }
     public void deletePendingUser(String email){
-        redisTemplate.opsForValue().decrement("PENDING"+email);
+        redisTemplate.delete("PENDING"+email);
+        log.info("Pending user deleted for {}", email);
     }
 }

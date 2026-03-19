@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -28,14 +29,19 @@ public class User {
 
     private String password;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
-    private Role role;
+    private Role role=Role.CUSTOMER;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
-    private Status status;
+    private Status status=Status.ACTIVE;
 
-    private boolean emailVerified;
+    @Builder.Default
+    private boolean emailVerified=false;
 
+    @CreationTimestamp
+    @Column(updatable = false)
     private LocalDateTime createdAt;
 
 }
