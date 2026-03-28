@@ -1,0 +1,87 @@
+version: '3.9'
+
+networks:
+  keycloak-net:
+    driver: bridge
+
+volumes:
+  keycloak_mysql_data:
+
+services:
+
+  # ------------------ MYSQL ------------------
+  keycloak-db:
+    image: mysql:8.0
+    container_name: keycloak-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root_pass
+      MYSQL_DATABASE: keycloak_db
+      MYSQL_USER: keycloak
+      MYSQL_PASSWORD: keycloak_pass
+    volumes:
+      - keycloak_mysql_data:/var/lib/mysql
+    networks:
+      - keycloak-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-ukeycloak", "-pkeycloak_pass"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ------------------ KEYCLOAK ------------------
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.1
+    container_name: keycloak
+    command: start-dev
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: mysql
+      KC_DB_URL: jdbc:mysql://keycloak-db:3306/keycloak_db
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak_pass
+      KC_HOSTNAME: localhost
+      KC_HTTP_ENABLED: "true"
+    ports:
+      - "8080:8080"
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    networks:
+      - keycloak-net
+    restart: unless-stopped
+
+  # ------------------ ZOOKEEPER ------------------
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    ports:
+      - "2181:2181"
+    networks:
+      - keycloak-net
+    restart: unless-stopped
+
+  # ------------------ KAFKA ------------------
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+
+      # IMPORTANT CONFIG
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    networks:
+      - keycloak-net
+    restart: unless-stopped

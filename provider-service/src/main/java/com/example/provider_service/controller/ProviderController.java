@@ -24,6 +24,11 @@ public class ProviderController {
 
     private final ProviderFacade providerFacade;
 
+    @GetMapping("/me")
+    public ProviderResponse getCurrentProvider(@RequestHeader("X-User-Id") String userId,@RequestHeader("X-User-Email") String email){
+        return providerFacade.getOrCreateProvider(userId,email);
+    }
+
     @PostMapping("/create")
     public ProviderResponse createProvider(
             @Valid @RequestBody CreateProviderRequest request) {

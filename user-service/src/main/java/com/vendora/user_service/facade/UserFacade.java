@@ -32,11 +32,10 @@ public class UserFacade {
             }
 
             User user = User.builder()
-                    .name(request.getName())
+                    .userName(request.getUserName())
                     .email(request.getEmail())
                     .phone(request.getPhone())
                     .district(request.getDistrict())
-                    .role(request.getRole())
                     .active(true)
                     .build();
 
@@ -99,4 +98,15 @@ public class UserFacade {
         return userMapper.toResponse(updated);
     }
 
+    public UserResponse getOrCreateUser(String userId, String email) {
+           User user=userService.findByIdOptional(userId)
+                    .orElseGet(()->User.builder()
+                            .id(userId)
+                            .userName(email)
+                            .active(true)
+                            .email(email)
+                            .build());
+
+           return userMapper.toResponse(userService.save(user));
     }
+}

@@ -1,10 +1,10 @@
 package com.example.provider_service.config;
 
 import com.example.provider_service.filter.HeaderAuthFilter;
-import jakarta.ws.rs.HttpMethod;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -25,8 +25,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/provider/top-rated/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/provider/district/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/provider/category/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/provider/{id}").permitAll()
-
+                        .requestMatchers(HttpMethod.GET, "/provider/*").permitAll()
+                        .requestMatchers(HttpMethod.GET,"/provider/me").hasRole("PROVIDER")
                         // ── Any authenticated user can view ──────────────────
                         .requestMatchers(HttpMethod.GET, "/provider/all").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/provider/user/**").hasAnyRole("CUSTOMER", "PROVIDER", "ADMIN")

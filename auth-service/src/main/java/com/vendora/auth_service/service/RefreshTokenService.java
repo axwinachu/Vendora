@@ -16,7 +16,7 @@ public class RefreshTokenService {
     private static final long TTL_DAY= 7;
 
 
-    public void storeRefreshToken(Long userId,String refreshToken){
+    public void storeRefreshToken(String userId,String refreshToken){
         redisTemplate.opsForValue().set(PREFIX+userId,refreshToken,TTL_DAY, TimeUnit.DAYS);
     }
 

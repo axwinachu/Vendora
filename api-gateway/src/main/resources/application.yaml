@@ -5,8 +5,28 @@ spring:
   application:
     name: api-gateway
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/vendora
+
   cloud:
     gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:5173"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+
       server:
         webflux:
           discovery:
@@ -20,22 +40,34 @@ spring:
                 - Path=/auth/**
 
             - id: user-service
-              uri: lb://user-service
+              uri: http://localhost:8083
               predicates:
                 - Path=/user/**
               filters:
-                - name: JwtAuthFilter
+                - name: KeycloakHeader
 
             - id: provider-service
               uri: lb://provider-service
               predicates:
                 - Path=/provider/**
+              filters:
+                - name: KeycloakHeader
+
+            - id: booking-service
+              uri: lb://booking-service
+              predicates:
+                - Path=/booking/**
+              filters:
+                - name: KeycloakHeader
+
 
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka
+
   instance:
     prefer-ip-address: true
-jwt:
-  secret: vendora-super-secret-key-for-jwt-authentication-123456
+    ip-address: 127.0.0.1
+    hostname: 127.0.0.1
+    instance-id: ${spring.application.name}:${server.port}

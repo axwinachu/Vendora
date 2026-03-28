@@ -12,14 +12,12 @@ import java.time.LocalDateTime;
 @Builder
 public class UserResponse {
     private String id;
-    private String name;
+    private String Username;
     private String email;
     private String phone;
     private String profilePhotoUrl;
-    private Role role;
     private District district;
     private Boolean active;
-
     private Double latitude;
     private Double longitude;
     private Boolean locationSet;

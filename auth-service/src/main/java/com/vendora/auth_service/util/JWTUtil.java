@@ -23,7 +23,7 @@ public class JWTUtil {
         return Keys.hmacShaKeyFor(Refresh_SECRET.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateToken(Long userId, String email, String role) {
+    public String generateToken(String userId, String email, String role) {
 
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
@@ -37,7 +37,7 @@ public class JWTUtil {
                 .signWith(getKey())
                 .compact();
     }
-   public String generateRefreshToken(Long userId,String email){
+   public String generateRefreshToken(String userId,String email){
         Map<String,Object> claims=new HashMap<>();
         claims.put("userId",userId);
         return Jwts.builder()

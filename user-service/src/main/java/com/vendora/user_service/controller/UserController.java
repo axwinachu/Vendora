@@ -20,6 +20,11 @@ import java.util.List;
 public class UserController {
     private final UserFacade userFacade;
 
+    @GetMapping("/me")
+    public UserResponse getCurrentUser(@RequestHeader("X-User-Id") String userId,@RequestHeader("X-User-Email") String email){
+        return userFacade.getOrCreateUser(userId,email);
+    }
+
     @PostMapping("/create")
     public UserResponse createUser(@RequestBody CreateUserRequest request){
         return userFacade.createUser(request);
@@ -34,6 +39,7 @@ public class UserController {
     }
     @GetMapping("/all")
     public List<UserResponse> getAllUsers(){
+
         return userFacade.getAllUsers();
     }
     @GetMapping("/district/{district}")

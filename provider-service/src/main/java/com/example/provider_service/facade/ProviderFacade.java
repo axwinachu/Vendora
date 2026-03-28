@@ -183,4 +183,14 @@ public class ProviderFacade {
                 .forEach(cloudinaryService::deletePortfolioImage);
         providerService.delete(provider);
     }
+
+    public ProviderResponse getOrCreateProvider(String userId, String email) {
+        Provider provider=providerService.findByIdOptional(userId)
+                .orElseGet(()->
+                        Provider.builder()
+                                .userId(userId)
+                                .email(email)
+                                .build());
+        return providerMapper.toResponse(providerService.save(provider));
+    }
 }

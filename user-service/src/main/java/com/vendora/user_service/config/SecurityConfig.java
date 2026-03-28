@@ -1,10 +1,10 @@
 package com.vendora.user_service.config;
 
 import com.vendora.user_service.filter.HeaderAuthFilter;
-import jakarta.ws.rs.HttpMethod;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
@@ -24,13 +24,13 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/user/create").permitAll()
 
                         // GET /user/{id} — customer, provider, admin can view
-                        .requestMatchers(HttpMethod.GET, "/user/{id}").hasAnyRole("CUSTOMER", "PROVIDER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/user/*").hasAnyRole("CUSTOMER", "PROVIDER", "ADMIN")
 
                         // GET /user/email/{email} — all roles, used internally by other services
                         .requestMatchers(HttpMethod.GET, "/user/email/**").hasAnyRole("CUSTOMER", "PROVIDER", "ADMIN")
 
                         // GET /user/all — admin only
-                        .requestMatchers(HttpMethod.GET, "/user/all").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/user/all").permitAll()
 
                         // GET /user/district/{district} — admin only
                         .requestMatchers(HttpMethod.GET, "/user/district/**").hasRole("ADMIN")

@@ -16,7 +16,6 @@ public class ProviderMapper {
 
     public ProviderResponse toResponse(Provider provider, Double distanceKm) {
         return ProviderResponse.builder()
-                .id(provider.getId())
                 .userId(provider.getUserId())
                 .businessName(provider.getBusinessName())
                 .description(provider.getDescription())

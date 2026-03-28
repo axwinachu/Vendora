@@ -20,25 +20,20 @@ import java.time.LocalDateTime;
 @Table(name = "user_details")
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(length = 36)
     private String id;
 
     @Column(nullable = false,unique = true,length = 100)
     private  String email;
 
-    @Column(nullable = false,length = 100)
-    private String name;
+    @Column(length = 100)
+    private String userName;
 
     @Column(length = 15)
     private String phone;
 
 
     private String profilePhotoUrl;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Role role;
 
     @Enumerated(EnumType.STRING)
     private District district;

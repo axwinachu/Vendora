@@ -19,14 +19,39 @@ import java.util.Objects;
 @Component
 public class HeadAuthFilter extends OncePerRequestFilter {
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String email=request.getHeader("X-User-Email");
-        String role=request.getHeader("X-User-Role");
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
 
-        if(Objects.nonNull(email) && Objects.nonNull(role) && Objects.isNull(SecurityContextHolder.getContext().getAuthentication())){
-            UsernamePasswordAuthenticationToken auth=new UsernamePasswordAuthenticationToken(email,null, List.of(new SimpleGrantedAuthority("ROLE_"+role)));
+        String email  = request.getHeader("X-User-Email");
+        String role   = request.getHeader("X-User-Role");
+        String userId = request.getHeader("X-User-Id");
+
+        log.info("email {} role {} userId {}", email, role, userId);
+
+        if (userId != null && role != null
+                && SecurityContextHolder.getContext().getAuthentication() == null) {
+
+            // ADD THIS ↓
+            log.info(">>> Building auth for role: ROLE_{}", role);
+
+            UsernamePasswordAuthenticationToken auth =
+                    new UsernamePasswordAuthenticationToken(
+                            userId, null,
+                            List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                    );
             SecurityContextHolder.getContext().setAuthentication(auth);
+
+            // ADD THIS ↓
+            log.info(">>> Auth set: {}", SecurityContextHolder.getContext()
+                    .getAuthentication().getAuthorities());
+        } else {
+            // ADD THIS ↓
+            log.warn(">>> Auth NOT set — userId: {}, role: {}, existingAuth: {}",
+                    userId, role,
+                    SecurityContextHolder.getContext().getAuthentication());
         }
-        filterChain.doFilter(request,response);
+
+        filterChain.doFilter(request, response);
     }
 }

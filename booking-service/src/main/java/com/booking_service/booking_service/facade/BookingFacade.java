@@ -105,7 +105,7 @@ public class BookingFacade {
         return toResponse(booking);
     }
     public BookingResponse rejected(String bookingId,String providerEmail){
-        Booking booking=bookingService.confirm(bookingId,providerEmail);
+        Booking booking=bookingService.rejected(bookingId,providerEmail);
         kafkaProducerService.publishBookingCancelled(toEvent(booking,"booking.rejected"));
         return toResponse(booking);
     }

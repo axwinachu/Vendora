@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 public class CreateUserRequest {
     @NotBlank(message = "Name is required")
     @Size(min = 2, max = 100, message = "Name must be between 2 and 100 characters")
-    private String name;
+    private String userName;
 
     @NotBlank(message = "Email is required")
     @Email(message = "Invalid email format")
@@ -22,8 +22,6 @@ public class CreateUserRequest {
     @Pattern(regexp ="^[6-9]\\d{9}$",message = "Invalid  phone number")
     private String phone;
 
-    @NotNull(message = "Role is required")
-    private Role role;
 
     private District district;
 

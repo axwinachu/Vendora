@@ -18,11 +18,10 @@ public class UserMapper {
 
         return UserResponse.builder()
                 .id(user.getId())
-                .name(user.getName())
+                .Username(user.getUserName())
                 .email(user.getEmail())
                 .phone(user.getPhone())
                 .profilePhotoUrl(user.getProfilePhotoUrl())
-                .role(user.getRole())
                 .district(user.getDistrict())
                 .latitude(user.getLatitude())
                 .longitude(user.getLongitude())

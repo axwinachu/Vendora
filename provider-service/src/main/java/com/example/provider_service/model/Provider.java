@@ -20,35 +20,28 @@ import java.time.LocalDateTime;
 @Builder
 @Table(name = "providers")
 public class Provider {
-    @GeneratedValue(strategy = GenerationType.UUID)
     @Id
-    @Column(length = 36)
-    private String id;
-
     @Column(nullable = false,unique = true)
     private String userId;
 
-    @Column(nullable = false)
     private String businessName;
 
-    @Column(nullable = false)
+    private String email;
+
     private String description;
 
-    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private ServiceCategory serviceCategory;
 
-    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private District district;
 
-    @Column(nullable = false, length = 200)
+    @Column( length = 200)
     private String address;
 
-    @Column(nullable = false)
+
     private Double latitude;
 
-    @Column(nullable = false)
     private Double longitude;
 
     @Column(name = "profile_photo_url", length = 500)

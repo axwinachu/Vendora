@@ -1,0 +1,118 @@
+.home-page {
+  background-color: var(--bg-dark);
+}
+
+.home-main {
+  display: flex;
+  flex-direction: column;
+  gap: 80px;
+}
+
+.service-section {
+  padding: 40px 0;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 32px;
+}
+
+.section-title {
+  font-size: 32px;
+  color: var(--text-primary);
+}
+
+.section-subtitle {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+.view-all {
+  background: transparent;
+  border: 1px solid var(--glass-border);
+  color: var(--primary);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.view-all:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  box-shadow: 0 0 15px var(--primary-glow);
+}
+
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.cta-banner {
+  padding: 60px;
+  border-radius: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+  overflow: hidden;
+  position: relative;
+}
+
+.cta-content {
+  flex: 1;
+}
+
+.cta-content h3 {
+  font-size: 36px;
+  margin-bottom: 16px;
+}
+
+.cta-content p {
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+  max-width: 450px;
+}
+
+.cta-image {
+  flex: 0.6;
+  position: relative;
+  height: 200px;
+}
+
+.cta-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, var(--primary), transparent 70%);
+  border-radius: 50%;
+  filter: blur(40px);
+  opacity: 0.4;
+  animation: pulseGlow 4s infinite ease-in-out;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.4; }
+  50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.6; }
+}
+
+@media (max-width: 768px) {
+  .cta-banner {
+    flex-direction: column;
+    padding: 40px 24px;
+    text-align: center;
+  }
+  
+  .cta-content h3 {
+    font-size: 28px;
+  }
+}

@@ -15,7 +15,6 @@ import java.util.List;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProviderResponse {
-    private String id;
     private String userId;
     private String businessName;
     private String description;
