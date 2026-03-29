@@ -12,17 +12,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
-      - name: Install Docker Compose
-        run: sudo apt-get update && sudo apt-get install -y docker-compose
-
       - name: Start services
-        run: docker-compose up -d
+        run: docker compose up -d
 
-      - name: Wait for containers
-        run: sleep 30
+      - name: Wait for services
+        run: sleep 40
 
       - name: Check containers
         run: docker ps
 
       - name: Stop services
-        run: docker-compose down
+        run: docker compose down
