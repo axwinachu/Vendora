@@ -1,4 +1,4 @@
-name: CI Pipeline
+name: Docker Compose CI
 
 on:
   push:
@@ -10,18 +10,16 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Set up Java
-        uses: actions/setup-java@v3
-        with:
-          java-version: '21'
+      - name: Install Docker Compose
+        run: sudo apt-get update && sudo apt-get install -y docker-compose
 
-      - name: Build user-service
-        run: cd user-service && mvn clean install
+      - name: Build all services
+        run: docker-compose build
 
-      - name: Build provider-service
-        run: cd provider-service && mvn clean install
+      - name: Run containers (test)
+        run: docker-compose up -d
 
-      - name: Build booking-service
-        run: cd booking-service && mvn clean install
+      - name: Check running containers
+        run: docker ps

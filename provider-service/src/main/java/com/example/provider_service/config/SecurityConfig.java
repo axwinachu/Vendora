@@ -20,39 +20,38 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.authorizeHttpRequests(auth -> auth
 
-                        // ── Fully public — no token needed ───────────────────
+                        //public
                         .requestMatchers(HttpMethod.GET, "/provider/nearby").permitAll()
                         .requestMatchers(HttpMethod.GET, "/provider/top-rated/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/provider/district/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/provider/category/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/provider/*").permitAll()
                         .requestMatchers(HttpMethod.GET,"/provider/me").hasRole("PROVIDER")
-                        // ── Any authenticated user can view ──────────────────
+                        // authenticated user can view
                         .requestMatchers(HttpMethod.GET, "/provider/all").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/provider/user/**").hasAnyRole("CUSTOMER", "PROVIDER", "ADMIN")
 
-                        // ── Provider creates their own profile ───────────────
+
                         .requestMatchers(HttpMethod.POST, "/provider/create").hasAnyRole("PROVIDER", "ADMIN")
 
-                        // ── Provider updates their own profile ───────────────
+
                         .requestMatchers(HttpMethod.PUT, "/provider/*").hasAnyRole("PROVIDER", "ADMIN")
 
-                        // ── Provider toggles their own availability ──────────
+                        //Provider toggles
                         .requestMatchers(HttpMethod.PATCH, "/provider/*/availability").hasAnyRole("PROVIDER", "ADMIN")
 
-                        // ── Provider manages their own photos ────────────────
+                        //manages their own photos ────────────────
                         .requestMatchers(HttpMethod.POST,   "/provider/*/photo").hasAnyRole("PROVIDER", "ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/provider/*/photo").hasAnyRole("PROVIDER", "ADMIN")
 
-                        // ── Provider manages their own portfolio ─────────────
+                        // portfolio
                         .requestMatchers(HttpMethod.POST,   "/provider/*/portfolio").hasAnyRole("PROVIDER", "ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/provider/*/portfolio").hasAnyRole("PROVIDER", "ADMIN")
 
-                        // ── Admin only ───────────────────────────────────────
+                        //Admin
                         .requestMatchers(HttpMethod.PATCH,  "/provider/*/status").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/provider/*").hasRole("ADMIN")
 
-                        // ── Called by review-service internally ──────────────
                         .requestMatchers(HttpMethod.PATCH, "/provider/*/rating").hasAnyRole("CUSTOMER", "ADMIN")
 
                         .anyRequest().authenticated()

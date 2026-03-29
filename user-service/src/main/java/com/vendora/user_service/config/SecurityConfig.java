@@ -19,23 +19,19 @@ public class SecurityConfig {
         return http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
 
-                        // POST /user/create — called by auth-service after OTP verify
-                        // internal call so permit all
+
                         .requestMatchers(HttpMethod.POST, "/user/create").permitAll()
 
-                        // GET /user/{id} — customer, provider, admin can view
+
                         .requestMatchers(HttpMethod.GET, "/user/*").hasAnyRole("CUSTOMER", "PROVIDER", "ADMIN")
 
-                        // GET /user/email/{email} — all roles, used internally by other services
+
                         .requestMatchers(HttpMethod.GET, "/user/email/**").hasAnyRole("CUSTOMER", "PROVIDER", "ADMIN")
 
-                        // GET /user/all — admin only
                         .requestMatchers(HttpMethod.GET, "/user/all").permitAll()
 
-                        // GET /user/district/{district} — admin only
                         .requestMatchers(HttpMethod.GET, "/user/district/**").hasRole("ADMIN")
 
-                        // POST /user/{id}/photo — customer or provider uploads own photo
                         .requestMatchers(HttpMethod.POST, "/user/*/photo").hasAnyRole("CUSTOMER", "PROVIDER", "ADMIN")
 
                         // PATCH /user/{id}/location/gps — customer or provider updates own location

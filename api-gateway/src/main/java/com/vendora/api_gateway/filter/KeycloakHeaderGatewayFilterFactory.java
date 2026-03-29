@@ -33,7 +33,7 @@ public class KeycloakHeaderGatewayFilterFactory extends AbstractGatewayFilterFac
 
                             String role = "CUSTOMER"; // default
 
-                            // ✅ Extract roles from resource_access
+
                             var resourceAccess = jwt.getClaimAsMap("resource_access");
 
                             if (resourceAccess != null) {
