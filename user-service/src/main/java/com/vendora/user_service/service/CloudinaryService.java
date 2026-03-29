@@ -3,6 +3,8 @@ package com.vendora.user_service.service;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.Transformation;
 import com.cloudinary.utils.ObjectUtils;
+import com.vendora.user_service.exception.FileOprationException;
+import com.vendora.user_service.exception.ProfileUploadingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,13 +27,13 @@ public class CloudinaryService {
 
     public void validateFile(MultipartFile file) {
         if (file == null || file.isEmpty()) {
-            throw new RuntimeException("File is empty. Please select an image.");
+            throw new FileOprationException("File is empty. Please select an image.");
         }
         if (!ALLOWED_TYPE.contains(file.getContentType())) {
-            throw new RuntimeException("Only JPG, PNG and WEBP images are allowed.");
+            throw new FileOprationException("Only JPG, PNG and WEBP images are allowed.");
         }
         if (file.getSize() > MAX_SIZE) {
-            throw new RuntimeException("File size must be under 5MB.");
+            throw new FileOprationException("File size must be under 5MB.");
         }
     }
 
@@ -63,7 +65,7 @@ public class CloudinaryService {
 
         } catch (Exception ex) {
             log.error("Cloudinary upload failed for user {}: {}", userId, ex.getMessage());
-            throw new RuntimeException("Photo upload failed: " + ex.getMessage());
+            throw new ProfileUploadingException("Photo upload failed: " + ex.getMessage());
         }
     }
 
@@ -76,7 +78,7 @@ public class CloudinaryService {
             log.info("Profile photo deleted for user {}", userId);
         } catch (Exception ex) {
             log.error("Cloudinary delete failed for user {}: {}", userId, ex.getMessage());
-            throw new RuntimeException("Photo deletion failed: " + ex.getMessage());
+            throw new ProfileUploadingException("Photo deletion failed: " + ex.getMessage());
         }
     }
 }

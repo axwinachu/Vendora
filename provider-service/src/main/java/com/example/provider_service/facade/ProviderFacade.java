@@ -6,6 +6,10 @@ import com.example.provider_service.dto.UpdateProviderRequest;
 import com.example.provider_service.enums.District;
 import com.example.provider_service.enums.ProviderStatus;
 import com.example.provider_service.enums.ServiceCategory;
+import com.example.provider_service.exception.ExceedImagesException;
+import com.example.provider_service.exception.ImageNotFoundException;
+import com.example.provider_service.exception.ProfileAlreadyExistsException;
+import com.example.provider_service.exception.ProfileNotFoundException;
 import com.example.provider_service.mapper.ProviderMapper;
 import com.example.provider_service.model.Provider;
 import com.example.provider_service.service.CloudinaryService;
@@ -27,7 +31,7 @@ public class ProviderFacade {
 
     public ProviderResponse createProviderRequest(CreateProviderRequest request) {
         if (providerService.existsByUserId(request.getUserId())) {
-            throw new RuntimeException("Provider profile already exists for this user.");
+            throw new ProfileAlreadyExistsException("Provider profile already exists for this user.");
         }
         Provider provider = Provider.builder()
                 .userId(request.getUserId())
@@ -138,7 +142,7 @@ public class ProviderFacade {
     public ProviderResponse removeProfilePhoto(String id) {
         Provider provider = providerService.findById(id);
         if (Objects.isNull(provider.getProfilePhotoUrl())) {
-            throw new RuntimeException("No profile photo found for provider: " + id);
+            throw new ProfileNotFoundException("No profile photo found for provider: " + id);
         }
         cloudinaryService.deleteProfilePhoto(id);
         provider.setProfilePhotoUrl(null);
@@ -149,7 +153,7 @@ public class ProviderFacade {
         Provider provider = providerService.findById(id);
         List<String> images = providerService.getPortfolioList(provider);
         if (images.size() >= 10) {
-            throw new RuntimeException("Maximum 10 portfolio images allowed.");
+            throw new ExceedImagesException("Maximum 10 portfolio images allowed.");
         }
         // FIXED — was UploadPortfolioImage (capital U, old broken method)
         String url = cloudinaryService.uploadPortfolioImage(file, id);
@@ -162,7 +166,7 @@ public class ProviderFacade {
         Provider provider = providerService.findById(id);
         List<String> images = providerService.getPortfolioList(provider);
         if (!images.contains(imageUrl)) {
-            throw new RuntimeException("Image URL not found in portfolio.");
+            throw new ImageNotFoundException("Image URL not found in portfolio.");
         }
         cloudinaryService.deletePortfolioImage(imageUrl);
         images.remove(imageUrl);

@@ -3,8 +3,10 @@ package com.example.provider_service.service;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.Transformation;
 import com.cloudinary.utils.ObjectUtils;
+import com.example.provider_service.exception.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,13 +28,13 @@ public class CloudinaryService {
     private static final long MAX_SIZE = 5 * 1024 * 1024;
     public void validateFile(MultipartFile file) {
         if (file == null || file.isEmpty()) {
-            throw new RuntimeException("File is empty. Please select an image.");
+            throw new FileEmptyException("File is empty. Please select an image.");
         }
         if (!ALLOWED_TYPE.contains(file.getContentType())) {
-            throw new RuntimeException("Only JPG, PNG and WEBP images are allowed.");
+            throw new InvalidFileFormateException("Only JPG, PNG and WEBP images are allowed.");
         }
         if (file.getSize() > MAX_SIZE) {
-            throw new RuntimeException("File size must be under 5MB.");
+            throw new ExceedImagesException("File size must be under 5MB.");
         }
     }
 
@@ -60,7 +62,7 @@ public class CloudinaryService {
             return url;
         } catch (Exception ex) {
             log.error("Profile upload failed for provider {}: {}", providerId, ex.getMessage());
-            throw new RuntimeException("Profile upload failed: " + ex.getMessage());
+            throw new UploadingFailedException("Profile upload failed: " + ex.getMessage());
         }
     }
 
@@ -89,7 +91,8 @@ public class CloudinaryService {
             return url;
         } catch (Exception ex) {
             log.error("Portfolio upload failed for provider {}: {}", providerId, ex.getMessage());
-            throw new RuntimeException("Portfolio upload failed: " + ex.getMessage());
+            throw new UploadingFailedException(
+                    "Portfolio upload failed: " + ex.getMessage());
         }
     }
 
@@ -102,7 +105,7 @@ public class CloudinaryService {
             log.info("Profile photo deleted for provider {}", providerId);
         } catch (Exception ex) {
             log.error("Profile photo delete failed for provider {}: {}", providerId, ex.getMessage());
-            throw new RuntimeException("Profile photo deletion failed: " + ex.getMessage());
+            throw new FileDeletionFailedException("Profile photo deletion failed: " + ex.getMessage());
         }
     }
 
@@ -116,7 +119,7 @@ public class CloudinaryService {
             log.info("Portfolio image deleted: {}", publicId);
         } catch (Exception ex) {
             log.error("Portfolio delete failed: {}", ex.getMessage());
-            throw new RuntimeException("Portfolio image deletion failed: " + ex.getMessage());
+            throw new FileDeletionFailedException("Portfolio image deletion failed: " + ex.getMessage());
         }
     }
 

@@ -5,6 +5,8 @@ import com.vendora.user_service.dto.GeocodeAddressRequest;
 import com.vendora.user_service.dto.UpdateLocationRequest;
 import com.vendora.user_service.dto.UserResponse;
 import com.vendora.user_service.enums.District;
+import com.vendora.user_service.exception.EmailAlreadyRegisterException;
+import com.vendora.user_service.exception.ProfileUploadingException;
 import com.vendora.user_service.mapper.UserMapper;
 import com.vendora.user_service.model.User;
 import com.vendora.user_service.service.CloudinaryService;
@@ -28,7 +30,7 @@ public class UserFacade {
         public UserResponse createUser(CreateUserRequest request){
 
             if(userService.existsByEmail(request.getEmail())){
-                throw new RuntimeException("Email already registered");
+                throw new EmailAlreadyRegisterException("Email already registered");
             }
 
             User user = User.builder()
@@ -79,7 +81,7 @@ public class UserFacade {
 
             return userMapper.toResponse(updated);
         }catch (Exception ex){
-            throw new RuntimeException("Profile uploading exception"+ex.getMessage());
+            throw new ProfileUploadingException("Profile uploading exception"+ex.getMessage());
         }
     }
     // NEW — GPS: frontend sends lat/lng directly

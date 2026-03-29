@@ -1,6 +1,8 @@
 package com.booking_service.booking_service.service;
 
 import com.booking_service.booking_service.enums.BookingStatus;
+import com.booking_service.booking_service.exception.BookingNotFoundException;
+import com.booking_service.booking_service.exception.InvalidBookingStatusException;
 import com.booking_service.booking_service.model.Booking;
 import com.booking_service.booking_service.repository.BookingRepository;
 import jakarta.transaction.Transactional;
@@ -21,7 +23,7 @@ public class BookingService {
 
     public Booking findById(String id){
         return bookingRepository.findById(id)
-                .orElseThrow(()->new RuntimeException("Booking not found"));
+                .orElseThrow(()->new BookingNotFoundException("Booking not found"));
     }
 
     public List<Booking> findByCustomerId(String customerId){
@@ -37,7 +39,7 @@ public class BookingService {
     }
     private void validateStatus(Booking booking, BookingStatus required,String message){
         if(booking.getStatus()!= required){
-            throw new RuntimeException(message);
+            throw new InvalidBookingStatusException(message);
         }
     }
     @Transactional
@@ -76,7 +78,7 @@ public class BookingService {
     public Booking cancel(String bookingId,String canceledBy,String reason){
         Booking booking =findById(bookingId);
         if(booking.getStatus()==BookingStatus.COMPLETED || booking.getStatus()==BookingStatus.PAID){
-            throw new RuntimeException("Completed or paid bookings cannot be cancelled.");
+            throw new InvalidBookingStatusException("Completed or paid bookings cannot be cancelled.");
         }
         booking.setStatus(BookingStatus.CANCELED);
         booking.setCancelledBy(canceledBy);
