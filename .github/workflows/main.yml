@@ -1,0 +1,25 @@
+name: Infra CI (Compose Only)
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Start services
+        run: docker compose up -d
+
+      - name: Wait for services
+        run: sleep 40
+
+      - name: Check containers
+        run: docker ps
+
+      - name: Stop services
+        run: docker compose down
