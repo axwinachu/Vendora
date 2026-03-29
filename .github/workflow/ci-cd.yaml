@@ -1,4 +1,4 @@
-name: Docker Compose CI
+name: Infra CI (Keycloak + Kafka)
 
 on:
   push:
@@ -15,11 +15,14 @@ jobs:
       - name: Install Docker Compose
         run: sudo apt-get update && sudo apt-get install -y docker-compose
 
-      - name: Build all services
-        run: docker-compose build
-
-      - name: Run containers (test)
+      - name: Start Infra Services
         run: docker-compose up -d
+
+      - name: Wait for services
+        run: sleep 30
 
       - name: Check running containers
         run: docker ps
+
+      - name: Stop services
+        run: docker-compose down
