@@ -18,7 +18,7 @@ public class UserMapper {
 
         return UserResponse.builder()
                 .id(user.getId())
-                .Username(user.getUserName())
+                .userName(user.getUserName())
                 .email(user.getEmail())
                 .phone(user.getPhone())
                 .profilePhotoUrl(user.getProfilePhotoUrl())

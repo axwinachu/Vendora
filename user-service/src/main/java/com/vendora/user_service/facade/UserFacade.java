@@ -1,9 +1,6 @@
 package com.vendora.user_service.facade;
 
-import com.vendora.user_service.dto.CreateUserRequest;
-import com.vendora.user_service.dto.GeocodeAddressRequest;
-import com.vendora.user_service.dto.UpdateLocationRequest;
-import com.vendora.user_service.dto.UserResponse;
+import com.vendora.user_service.dto.*;
 import com.vendora.user_service.enums.District;
 import com.vendora.user_service.exception.EmailAlreadyRegisterException;
 import com.vendora.user_service.exception.ProfileUploadingException;
@@ -110,5 +107,23 @@ public class UserFacade {
                             .build());
 
            return userMapper.toResponse(userService.save(user));
+    }
+
+    public UserResponse updateUser(String id, UpdateUserRequest request) {
+        User user = userService.findById(id);
+
+        if (request.getUserName() != null) {
+            user.setUserName(request.getUserName());
+        }
+
+        if (request.getPhone() != null) {
+            user.setPhone(request.getPhone());
+        }
+
+        if (request.getDistrict() != null) {
+            user.setDistrict(request.getDistrict());
+        }
+        return userMapper.toResponse(userService.save(user));
+
     }
 }

@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Builder
 public class UserResponse {
     private String id;
-    private String Username;
+    private String userName;
     private String email;
     private String phone;
     private String profilePhotoUrl;

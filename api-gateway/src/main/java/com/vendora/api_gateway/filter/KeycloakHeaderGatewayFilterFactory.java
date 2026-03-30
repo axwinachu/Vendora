@@ -35,9 +35,9 @@ public class KeycloakHeaderGatewayFilterFactory extends AbstractGatewayFilterFac
 
 
                             var resourceAccess = jwt.getClaimAsMap("resource_access");
-
+                             log.info("relame roel {}",resourceAccess);
                             if (resourceAccess != null) {
-                                var client = (Map<?, ?>) resourceAccess.get("api-gateway");
+                                var client = (Map<?, ?>) resourceAccess.get("vendora-app");
 
                                 if (client != null) {
                                     var roles = (List<?>) client.get("roles");

@@ -23,11 +23,12 @@ public class HeaderAuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String email=request.getHeader("X-User-Email");
         String role=request.getHeader("X-User-Role");
+        String userId=request.getHeader("X-User-Id");
         if(Objects.nonNull(email) && Objects.nonNull(role)
                 && Objects.isNull(SecurityContextHolder.getContext().getAuthentication())){
             UsernamePasswordAuthenticationToken auth=new UsernamePasswordAuthenticationToken(email,null, List.of(new SimpleGrantedAuthority("ROLE_"+role)));
             SecurityContextHolder.getContext().setAuthentication(auth);
-            log.debug("Auth set for {} role {}", email, role);
+            log.debug("Auth set for {} role {} userId {}", email, role,userId);
 
         }
         filterChain.doFilter(request,response);

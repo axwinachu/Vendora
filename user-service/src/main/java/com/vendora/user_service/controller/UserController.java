@@ -1,9 +1,6 @@
 package com.vendora.user_service.controller;
 
-import com.vendora.user_service.dto.CreateUserRequest;
-import com.vendora.user_service.dto.GeocodeAddressRequest;
-import com.vendora.user_service.dto.UpdateLocationRequest;
-import com.vendora.user_service.dto.UserResponse;
+import com.vendora.user_service.dto.*;
 import com.vendora.user_service.enums.District;
 import com.vendora.user_service.facade.UserFacade;
 import jakarta.validation.Valid;
@@ -24,7 +21,12 @@ public class UserController {
     public UserResponse getCurrentUser(@RequestHeader("X-User-Id") String userId,@RequestHeader("X-User-Email") String email){
         return userFacade.getOrCreateUser(userId,email);
     }
-
+    @PatchMapping("/{id}")
+    public UserResponse updateUser(
+            @PathVariable String id,
+            @RequestBody UpdateUserRequest request) {
+        return userFacade.updateUser(id, request);
+    }
     @PostMapping("/create")
     public UserResponse createUser(@RequestBody CreateUserRequest request){
         return userFacade.createUser(request);
