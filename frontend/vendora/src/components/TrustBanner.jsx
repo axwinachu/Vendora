@@ -1,88 +1,53 @@
 import React from "react";
 
-export default function Footer() {
-  return (
-    <footer className="uc-footer">
-      <div className="uc-section__inner">
-        <div className="uc-footer__grid">
-          <div className="uc-footer__brand">
-            <div className="uc-footer__logo">
-              <span className="uc-logo-icon">V</span>
-              <span className="uc-logo-text">Vendora</span>
-            </div>
-            <p className="uc-footer__tagline">
-              Professional home services at your doorstep.
-            </p>
-            <div className="uc-footer__socials">
-              {["Twitter", "Instagram", "LinkedIn", "Facebook"].map((s) => (
-                <a key={s} href="#" className="uc-social-btn" title={s}>
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <circle cx="12" cy="12" r="10" />
-                  </svg>
-                </a>
-              ))}
-            </div>
-          </div>
+const TRUST = [
+  {
+    icon: "🛡️",
+    title: "Verified Professionals",
+    desc: "Every expert is background-checked and skill-tested before onboarding.",
+  },
+  {
+    icon: "💳",
+    title: "Transparent Pricing",
+    desc: "No hidden charges. What you see is exactly what you pay.",
+  },
+  {
+    icon: "⭐",
+    title: "Satisfaction Guaranteed",
+    desc: "Not happy? We'll re-do the service at no extra cost.",
+  },
+  {
+    icon: "📍",
+    title: "Service at Your Door",
+    desc: "Our professionals come to you — no travel hassle.",
+  },
+];
 
-          {[
-            {
-              title: "Company",
-              links: [
-                "About us",
-                "Careers",
-                "Press",
-                "Blog",
-                "Investor relations",
-              ],
-            },
-            {
-              title: "Services",
-              links: [
-                "Electrician",
-                "Plumber",
-                "Cleaning",
-                "AC Repair",
-                "Carpentry",
-              ],
-            },
-            {
-              title: "Support",
-              links: [
-                "Help center",
-                "Safety",
-                "Contact us",
-                "Terms",
-                "Privacy",
-              ],
-            },
-          ].map((col) => (
-            <div key={col.title} className="uc-footer__col">
-              <h4 className="uc-footer__col-title">{col.title}</h4>
-              <ul className="uc-footer__links">
-                {col.links.map((l) => (
-                  <li key={l}>
-                    <a href="#" className="uc-footer__link">
-                      {l}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+export default function TrustBanner() {
+  return (
+    <section className="uc-trust">
+      <div className="uc-section__inner">
+        <div className="uc-trust__top">
+          <p className="uc-section__eyebrow">Why Vendora</p>
+          <h2 className="uc-section__title">
+            India's most trusted home service platform
+          </h2>
+          <p className="uc-trust__desc">
+            Millions of happy customers across 25+ cities trust us for quality
+            home services.
+          </p>
+        </div>
+
+        <div className="uc-trust-grid">
+          {TRUST.map((item) => (
+            <div key={item.title} className="uc-trust-card">
+              <div className="uc-trust-card__icon">{item.icon}</div>
+              <h3 className="uc-trust-card__title">{item.title}</h3>
+              <p className="uc-trust-card__desc">{item.desc}</p>
             </div>
           ))}
         </div>
-
-        <div className="uc-footer__bottom">
-          <p>© 2026 Vendora Marketplace Pvt. Ltd. All rights reserved.</p>
-          <p>Made with ❤️ in India</p>
-        </div>
       </div>
-    </footer>
+    </section>
   );
 }

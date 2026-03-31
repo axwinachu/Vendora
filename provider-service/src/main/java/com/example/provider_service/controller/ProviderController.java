@@ -54,26 +54,22 @@ public class ProviderController {
     public List<ProviderResponse> getByDistrict(@PathVariable District district) {
         return providerFacade.getByDistrict(district);
     }
-
     @GetMapping("/category/{category}")
     public List<ProviderResponse> getByCategory(@PathVariable ServiceCategory category) {
         return providerFacade.getByCategory(category);
     }
-
     @GetMapping("/district/{district}/category/{category}")
     public List<ProviderResponse> getByDistrictAndCategory(
             @PathVariable District district,
             @PathVariable ServiceCategory category) {
         return providerFacade.getByDistrictAndCategory(district, category);
     }
-
     @GetMapping("/top-rated/{district}")
     public List<ProviderResponse> getTopRated(
             @PathVariable District district,
             @RequestParam(required = false) ServiceCategory category) {  // FIXED: @RequestParam not @PathVariable
         return providerFacade.getTopRated(district, category);
     }
-
     @GetMapping("/nearby")
     public List<ProviderResponse> getNearBy(
             @RequestParam double lat,
@@ -83,7 +79,6 @@ public class ProviderController {
             @RequestParam(required = false) ServiceCategory category) {
         return providerFacade.getNearbyProviders(lat, lng, radiusKm, district, category);
     }
-
     @PutMapping("/{id}")
     public ProviderResponse update(
             @PathVariable String id,
@@ -139,6 +134,5 @@ public class ProviderController {
     @DeleteMapping("/{id}")
     public void deleteProvider(@PathVariable String id) {
         providerFacade.deleteProvider(id);
-
     }
 }
