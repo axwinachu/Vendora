@@ -154,6 +154,7 @@ function ProviderCard({ provider, index }) {
               )}
             </span>
           </div>
+          <button className="uc-btn">Chat</button>
           <button className="uc-btn uc-btn--book">Book Now</button>
         </div>
 

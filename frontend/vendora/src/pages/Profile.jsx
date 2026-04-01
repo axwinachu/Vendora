@@ -131,7 +131,7 @@ const Profile = () => {
     setError("");
   };
 
-  /* ── Image upload ── */
+
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -146,7 +146,7 @@ const Profile = () => {
     }
   };
 
-  /* ── GPS location ── */
+
   const updateLocation = () => {
     if (!navigator.geolocation) { setError("Geolocation not supported."); return; }
     setLocationLoading(true);

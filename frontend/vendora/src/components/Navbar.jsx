@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [location, setLocation] = useState("Coimbatore");
+  const [location, setLocation] = useState(["Palakkad","coimabtore"]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -55,9 +55,9 @@ export default function Navbar() {
           <Link to="/providers" className="uc-nav-link">
           service
           </Link>
-          <a href="#" className="uc-nav-link">
-            How it works
-          </a>
+          <Link to="/booking" className="uc-nav-link">
+          bookings
+          </Link>
         </div>
 
         {/* Right actions */}
