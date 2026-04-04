@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import axios from "../api/axios";
@@ -39,12 +40,6 @@ const SORT_OPTIONS = [
   { label: "Most Reviewed",      value: "reviews"    },
 ];
 
-const HERO_STATS = [
-  { num: null,  suffix: "+", label: "Providers",    dynamic: true  },
-  { num: "4.8", suffix: "",  label: "Avg Rating"                   },
-  { num: "50",  suffix: "+", label: "Areas Served"                 },
-];
-
 /* ─── StarRating ─────────────────────────────────────────── */
 function StarRating({ rating = 0 }) {
   return (
@@ -60,12 +55,16 @@ function StarRating({ rating = 0 }) {
 }
 
 /* ─── ProviderCard ───────────────────────────────────────── */
-function ProviderCard({ provider, index }) {
+// Receives onChat from the parent Provider component
+function ProviderCard({ provider, index, onChat }) {
   const [imgError, setImgError] = useState(false);
 
   const catIcon  = CATEGORY_ICONS[provider.serviceCategory] || CATEGORY_ICONS.DEFAULT;
   const showImg  = !imgError && provider.profilePhotoUrl;
   const isOnline = provider.isAvailable;
+
+  // provider.userId is the providerId used to open the chat room
+  const providerId = provider.userId || provider.id;
 
   return (
     <div className="pv-card" style={{ animationDelay: `${index * 0.05}s` }}>
@@ -154,7 +153,11 @@ function ProviderCard({ provider, index }) {
               )}
             </span>
           </div>
-          <button className="uc-btn">Chat</button>
+
+          {/* ✅ onClick receives a function reference, not a call result */}
+          <button className="uc-btn" onClick={() => onChat(providerId)}>
+            Chat
+          </button>
           <button className="uc-btn uc-btn--book">Book Now</button>
         </div>
 
@@ -180,6 +183,8 @@ function SkeletonCard() {
 
 /* ─── Provider Page ──────────────────────────────────────── */
 export default function Provider() {
+  const navigate = useNavigate();
+
   const [providers,      setProviders]      = useState([]);
   const [filtered,       setFiltered]       = useState([]);
   const [loading,        setLoading]        = useState(true);
@@ -188,6 +193,11 @@ export default function Provider() {
   const [activeCategory, setActiveCategory] = useState("All");
   const [sortBy,         setSortBy]         = useState("rating");
   const [availableOnly,  setAvailableOnly]  = useState(false);
+
+  /* ── handleChat: defined here, passed down as prop ── */
+  const handleChat = (providerId) => {
+    navigate(`/chat/${providerId}`);
+  };
 
   /* ── Fetch ── */
   useEffect(() => {
@@ -248,8 +258,9 @@ export default function Provider() {
      RENDER
      ══════════════════════════════════════════════════════ */
   return (
-    <div> 
-      <Navbar/>
+    <div>
+      <Navbar />
+
       {/* ════ BODY (sidebar + content) ════ */}
       <div className="pv-body">
 
@@ -360,9 +371,14 @@ export default function Provider() {
               </div>
             )}
 
-            {/* Cards */}
+            {/* Cards — onChat passed as prop */}
             {!loading && !error && filtered.map((p, i) => (
-              <ProviderCard key={p.userId} provider={p} index={i} />
+              <ProviderCard
+                key={p.userId}
+                provider={p}
+                index={i}
+                onChat={handleChat}
+              />
             ))}
 
           </div>

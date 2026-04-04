@@ -6,11 +6,13 @@ import com.vendora.chat_service.model.Message;
 import com.vendora.chat_service.service.ChatRoomService;
 import com.vendora.chat_service.service.MessageService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class ChatFacade {
@@ -22,9 +24,11 @@ public class ChatFacade {
 
         Message saved=messageService.saveMessage(room, dto.getSenderId(),dto.getReceiverId(), dto.getContent());
 
-        messagingTemplate.convertAndSendToUser(dto.getReceiverId(),"/queue/message",saved);
-
         messagingTemplate.convertAndSendToUser(dto.getReceiverId(),"/queue/messages",saved);
+
+        messagingTemplate.convertAndSendToUser(dto.getSenderId(),"/queue/messages",saved);
+
+        log.info("message delivered -room {} ,id {}",room.getId(),saved.getId());
 
     }
     public List<Message> getChatHistory(String userId,String providerId){
