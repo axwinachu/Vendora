@@ -15,6 +15,7 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path='/providers' element={<Provider/>}/>
           <Route path='/booking' element={<Booking/>}/>
+          <Route path='/chat' element={<ChatPage/>}/>
           <Route path="/chat/:providerId" element={<ChatPage />} />
         </Routes>
       </div>

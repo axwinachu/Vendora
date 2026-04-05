@@ -1,5 +1,6 @@
 package com.vendora.chat_service.controller;
 
+import com.vendora.chat_service.dto.ChatConversationDTO;
 import com.vendora.chat_service.facade.ChatFacade;
 import com.vendora.chat_service.model.Message;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,10 @@ public class MessageController {
     @GetMapping("/{userId}/{providerId}")
     public List<Message> getMessage(@PathVariable String userId,@PathVariable String providerId){
         return chatFacade.getChatHistory(userId,providerId);
+    }
+    @GetMapping("/conversations/{userId}")
+    public List<ChatConversationDTO> getConversations(@PathVariable String userId) {
+        return chatFacade.getConversations(userId);
     }
 
 }

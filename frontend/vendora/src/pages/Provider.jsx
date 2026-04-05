@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import axios from "../api/axios";
+import BookingModal from "../components/BookingModal";  // ← import
 import "../styles/Provider.css";
 
 /* ─── Constants ──────────────────────────────────────────── */
@@ -55,15 +56,13 @@ function StarRating({ rating = 0 }) {
 }
 
 /* ─── ProviderCard ───────────────────────────────────────── */
-// Receives onChat from the parent Provider component
-function ProviderCard({ provider, index, onChat }) {
+function ProviderCard({ provider, index, onChat, onBook }) {
   const [imgError, setImgError] = useState(false);
 
   const catIcon  = CATEGORY_ICONS[provider.serviceCategory] || CATEGORY_ICONS.DEFAULT;
   const showImg  = !imgError && provider.profilePhotoUrl;
   const isOnline = provider.isAvailable;
 
-  // provider.userId is the providerId used to open the chat room
   const providerId = provider.userId || provider.id;
 
   return (
@@ -102,7 +101,6 @@ function ProviderCard({ provider, index, onChat }) {
       {/* Body */}
       <div className="pv-card__body">
 
-        {/* Name + status */}
         <div className="pv-card__top">
           <span className="pv-card__name">{provider.businessName || "Provider"}</span>
           <span className={`pv-card__status pv-card__status--${provider.status || "INACTIVE"}`}>
@@ -110,21 +108,18 @@ function ProviderCard({ provider, index, onChat }) {
           </span>
         </div>
 
-        {/* Location */}
         <div className="pv-card__location">
           <span className="pv-card__location-icon">📍</span>
           {provider.district || "Location N/A"}
           {provider.distanceKm != null && ` · ${provider.distanceKm.toFixed(1)} km`}
         </div>
 
-        {/* Description */}
         {provider.description && (
           <p className="pv-card__desc">{provider.description}</p>
         )}
 
         <div className="pv-card__divider" />
 
-        {/* Rating */}
         <div className="pv-card__meta">
           <StarRating rating={provider.averageRating || 0} />
           <span className="pv-card__rating">
@@ -140,7 +135,6 @@ function ProviderCard({ provider, index, onChat }) {
           )}
         </div>
 
-        {/* Price + CTA */}
         <div className="pv-card__footer">
           <div>
             <span className="pv-card__price-from">Starting from</span>
@@ -154,11 +148,13 @@ function ProviderCard({ provider, index, onChat }) {
             </span>
           </div>
 
-          {/* ✅ onClick receives a function reference, not a call result */}
           <button className="uc-btn" onClick={() => onChat(providerId)}>
             Chat
           </button>
-          <button className="uc-btn uc-btn--book">Book Now</button>
+          {/* ✅ Pass the full provider object so the modal has all the info it needs */}
+          <button className="uc-btn uc-btn--book" onClick={() => onBook(provider)}>
+            Book Now
+          </button>
         </div>
 
       </div>
@@ -193,13 +189,13 @@ export default function Provider() {
   const [activeCategory, setActiveCategory] = useState("All");
   const [sortBy,         setSortBy]         = useState("rating");
   const [availableOnly,  setAvailableOnly]  = useState(false);
+  const [bookingProvider, setBookingProvider] = useState(null); // null = closed
+  const handleChat = (providerId) => navigate(`/chat/${providerId}`);
+  const handleBook = (provider) => setBookingProvider(provider);
 
-  /* ── handleChat: defined here, passed down as prop ── */
-  const handleChat = (providerId) => {
-    navigate(`/chat/${providerId}`);
+  const handleBookingSuccess = (bookingResponse) => {
+    console.log("Booking created:", bookingResponse);
   };
-
-  /* ── Fetch ── */
   useEffect(() => {
     setLoading(true);
     axios
@@ -208,8 +204,6 @@ export default function Provider() {
       .catch(() => setError("Failed to load providers. Please try again."))
       .finally(() => setLoading(false));
   }, []);
-
-  /* ── Filter + sort ── */
   useEffect(() => {
     let result = [...providers];
 
@@ -241,33 +235,33 @@ export default function Provider() {
     setFiltered(result);
   }, [providers, search, activeCategory, sortBy, availableOnly]);
 
-  /* ── Category counts ── */
   const countFor = (key) =>
     key === "All"
       ? providers.length
       : providers.filter((p) => p.serviceCategory === key).length;
 
-  /* ── Clear all filters ── */
   const clearFilters = () => {
     setSearch("");
     setActiveCategory("All");
     setAvailableOnly(false);
   };
-
-  /* ══════════════════════════════════════════════════════
-     RENDER
-     ══════════════════════════════════════════════════════ */
+  console.log(providers)
   return (
     <div>
       <Navbar />
+      {bookingProvider && (
+        <BookingModal
+          provider={bookingProvider}
+          onClose={() => setBookingProvider(null)}
+          onSuccess={handleBookingSuccess}
+        />
+      )}
 
-      {/* ════ BODY (sidebar + content) ════ */}
+      {/* ════ BODY ════ */}
       <div className="pv-body">
 
         {/* ── Sidebar ── */}
         <aside className="pv-sidebar">
-
-          {/* Categories */}
           <div className="pv-sidebar__block">
             <p className="pv-sidebar__title">Category</p>
             <div className="pv-sidebar__cats">
@@ -289,7 +283,6 @@ export default function Provider() {
 
           <div className="pv-sidebar__divider" />
 
-          {/* Available now toggle */}
           <div className="pv-sidebar__block">
             <p className="pv-sidebar__title">Availability</p>
             <div
@@ -303,13 +296,11 @@ export default function Provider() {
               </label>
             </div>
           </div>
-
         </aside>
 
         {/* ── Content ── */}
         <div className="pv-content">
 
-          {/* Toolbar */}
           <div className="pv-toolbar">
             <div className="pv-toolbar__left">
               <div className="pv-toolbar__count">
@@ -340,10 +331,7 @@ export default function Provider() {
             </div>
           </div>
 
-          {/* Grid */}
           <div className="pv-grid">
-
-            {/* Error */}
             {error && (
               <div className="pv-error">
                 <span className="pv-error__icon">⚠️</span>
@@ -354,12 +342,10 @@ export default function Provider() {
               </div>
             )}
 
-            {/* Skeleton */}
             {loading && !error &&
               Array.from({ length: 9 }).map((_, i) => <SkeletonCard key={i} />)
             }
 
-            {/* Empty */}
             {!loading && !error && filtered.length === 0 && (
               <div className="pv-empty">
                 <span className="pv-empty__icon">🔍</span>
@@ -371,16 +357,16 @@ export default function Provider() {
               </div>
             )}
 
-            {/* Cards — onChat passed as prop */}
+            {/* ✅ onBook now passes the full provider object */}
             {!loading && !error && filtered.map((p, i) => (
               <ProviderCard
                 key={p.userId}
                 provider={p}
                 index={i}
                 onChat={handleChat}
+                onBook={handleBook}
               />
             ))}
-
           </div>
         </div>
       </div>

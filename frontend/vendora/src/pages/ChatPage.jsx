@@ -1,418 +1,344 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useChatSocket } from "../hook/useChatSocket";
 import "../styles/Chat.css";
+import Footer from "../components/Footer";
+import Navbar from "../components/Navbar";
 
-/* ═══════════════════════════════════════════════════════════
-   HELPERS
-═══════════════════════════════════════════════════════════ */
+/* ─── Auth ──────────────────────────────────────────────── */
 function getUserProfile() {
-  try {
-    return JSON.parse(localStorage.getItem("user_profile") || "{}");
-  } catch {
-    return {};
-  }
+  try { return JSON.parse(localStorage.getItem("user_profile") || "{}"); }
+  catch { return {}; }
 }
 
-function formatTime(ts) {
+/* ─── Helpers ───────────────────────────────────────────── */
+const formatTime = (ts) =>
+  ts ? new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "";
+
+const formatPreview = (ts) => {
   if (!ts) return "";
-  return new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-}
+  const d = new Date(ts), now = new Date();
+  return d.toDateString() === now.toDateString()
+    ? d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    : d.toLocaleDateString([], { month: "short", day: "numeric" });
+};
 
-function formatDateDivider(ts) {
-  if (!ts) return "";
-  const d = new Date(ts);
-  const today = new Date();
-  const yesterday = new Date();
-  yesterday.setDate(today.getDate() - 1);
-  if (d.toDateString() === today.toDateString())     return "Today";
-  if (d.toDateString() === yesterday.toDateString()) return "Yesterday";
-  return d.toLocaleDateString([], { weekday: "long", month: "short", day: "numeric" });
-}
-
-function shouldShowDateDivider(messages, index) {
-  if (index === 0) return true;
-  const prev = new Date(messages[index - 1].timestamp);
-  const curr = new Date(messages[index].timestamp);
-  return prev.toDateString() !== curr.toDateString();
-}
-
-const AVATAR_COLORS = ["#2563EB","#10B981","#F59E0B","#EF4444","#8B5CF6","#EC4899","#0EA5E9","#F97316"];
-function avatarColor(name = "") {
-  return AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length];
-}
-
-/* ─── Avatar ───────────────────────────────────────────── */
-function Avatar({ name = "?", src, size = "md" }) {
-  const [imgErr, setImgErr] = useState(false);
-  const letter = name.charAt(0).toUpperCase();
-  const color  = avatarColor(name);
-
-  if (src && !imgErr) {
-    return (
-      <img
-        className={`ch-avatar ch-avatar--${size}`}
-        src={src}
-        alt={name}
-        onError={() => setImgErr(true)}
-      />
-    );
-  }
+/* Initials avatar */
+function Avatar({ name, size = "conv" }) {
+  const safeName = name || "";
+  const colors = ["#1B4332","#2D6A4F","#40916C","#1E3A5F","#374151"];
+  const idx = safeName.charCodeAt(0) % colors.length || 0;
+  const initials = safeName
+    .split(" ").slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() || "")
+    .join("");
   return (
     <div
-      className={`ch-avatar ch-avatar--${size} ch-avatar--fallback`}
-      style={{ background: color }}
+      className={`ch-av ch-av--${size} ch-av--letter`}
+      style={{ background: colors[idx] }}
     >
-      {letter}
+      {initials || "?"}
     </div>
   );
 }
 
-/* ─── Date Divider ─────────────────────────────────────── */
-function DateDivider({ timestamp }) {
-  return (
-    <div className="ch-date-divider">
-      <span className="ch-date-divider__line" />
-      <span className="ch-date-divider__label">{formatDateDivider(timestamp)}</span>
-      <span className="ch-date-divider__line" />
-    </div>
-  );
-}
+/* Send icon */
+const SendIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="22" y1="2" x2="11" y2="13" />
+    <polygon points="22 2 15 22 11 13 2 9 22 2" />
+  </svg>
+);
 
-/* ─── Message Bubble ───────────────────────────────────── */
-function MessageBubble({ msg, isMine, showAvatar, providerName, providerPhoto }) {
-  return (
-    <div className={`ch-msg-row ${isMine ? "ch-msg-row--mine" : "ch-msg-row--theirs"}`}>
-
-      {/* Receiver avatar slot */}
-      {!isMine && (
-        <div className="ch-avatar-slot">
-          {showAvatar && (
-            <Avatar name={providerName} src={providerPhoto} size="sm" />
-          )}
-        </div>
-      )}
-
-      <div className={`ch-bubble-wrap ${isMine ? "ch-bubble-wrap--mine" : "ch-bubble-wrap--theirs"}`}>
-        <div className={`ch-bubble ${isMine ? "ch-bubble--mine" : "ch-bubble--theirs"}`}>
-          {msg.content}
-        </div>
-        <span className="ch-bubble-time">{formatTime(msg.timestamp)}</span>
-      </div>
-
-    </div>
-  );
-}
-
-/* ─── Typing Indicator ─────────────────────────────────── */
-function TypingIndicator() {
-  return (
-    <div className="ch-typing">
-      <span className="ch-typing__dot" />
-      <span className="ch-typing__dot" />
-      <span className="ch-typing__dot" />
-    </div>
-  );
-}
-
-/* ─── Skeleton ─────────────────────────────────────────── */
-function MessageSkeleton() {
-  return (
-    <div className="ch-skeleton-wrap">
-      {[{ w: "55%", r: false }, { w: "40%", r: true }, { w: "65%", r: false },
-        { w: "35%", r: true  }, { w: "50%", r: false }, { w: "45%", r: true  }]
-        .map((s, i) => (
-          <div key={i} className={`ch-skeleton-row ${s.r ? "ch-skeleton-row--right" : ""}`}>
-            {!s.r && <div className="ch-skeleton__avatar" />}
-            <div className="ch-skeleton__bubble" style={{ width: s.w }} />
-          </div>
-        ))}
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════
-   MAIN — ChatPage
-═══════════════════════════════════════════════════════════ */
+/* ─── Main ──────────────────────────────────────────────── */
 export default function ChatPage() {
-  const { providerId } = useParams();
-  const navigate       = useNavigate();
+  const { providerId: routeId } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  /* ── Auth from localStorage ── */
-  const profile  = getUserProfile();
-  const myId     = profile.id;
-  const myName   = profile.userName?.split("@")[0] || "Me";
-  const myPhoto  = profile.profilePhotoUrl;
+  const profile = getUserProfile();
+  const myId = profile.id;
+  const myName = profile.userName || "Me";
 
-  /* ── State ── */
-  const [messages,       setMessages]       = useState([]);
-  const [input,          setInput]          = useState("");
-  const [loadingHistory, setLoadingHistory] = useState(true);
-  const [historyError,   setHistoryError]   = useState(false);
-  const [providerName,   setProviderName]   = useState("Provider");
-  const [providerPhoto,  setProviderPhoto]  = useState(null);
-  const [isTyping,       setIsTyping]       = useState(false);
-  const [showScrollFab,  setShowScrollFab]  = useState(false);
-  const [unreadCount,    setUnreadCount]    = useState(0);
-  const [toast,          setToast]          = useState(null);
+  const [activeId, setActiveId]     = useState(routeId || null);
+  const [activeName, setActiveName] = useState(location.state?.providerName || "");
 
-  const bottomRef   = useRef(null);
-  const inputRef    = useRef(null);
-  const messagesRef = useRef(null);
-  const isAtBottom  = useRef(true);
+  const [convs, setConvs]       = useState([]);
+  const [convLoad, setConvLoad] = useState(true);
+  const [messages, setMessages] = useState([]);
+  const [msgLoad, setMsgLoad]   = useState(false);
+  const [input, setInput]       = useState("");
 
-  /* ── WebSocket ── */
-  const { sendMessage, connected } = useChatSocket(myId, (msg) => {
-    setMessages((prev) => {
-      if (msg.id && prev.some((m) => m.id === msg.id)) return prev;
-      if (!isAtBottom.current) {
-        setUnreadCount((c) => c + 1);
-        setShowScrollFab(true);
+  const bottomRef = useRef(null);
+  const inputRef  = useRef(null);
+
+  /* ── Socket ─────────────────────────────────────────── */
+  const { sendMessage, connected } = useChatSocket(myId, (incoming) => {
+    const peerId = incoming.senderId === myId ? incoming.receiverId : incoming.senderId;
+
+    if (peerId === activeId) {
+      setMessages((prev) => [...prev, incoming]);
+    }
+
+    setConvs((prev) => {
+      const exists = prev.some((c) => c.id === peerId);
+      if (!exists) {
+        return [
+          { id: peerId, name: incoming.senderName || peerId, lastMsg: incoming.content, lastTs: incoming.timestamp, unread: 1 },
+          ...prev,
+        ];
       }
-      return [...prev, msg];
+      return prev.map((c) =>
+        c.id === peerId
+          ? { ...c, lastMsg: incoming.content, lastTs: incoming.timestamp, unread: c.id === activeId ? 0 : (c.unread || 0) + 1 }
+          : c
+      );
     });
   });
 
-  /* ── Load history ── */
+  /* ── Load conversations ──────────────────────────────── */
   useEffect(() => {
-    if (!myId || !providerId) return;
-    setLoadingHistory(true);
-    setHistoryError(false);
-
-    fetch(`http://localhost:8087/message/${myId}/${providerId}`, {
-      credentials: "include",
-    })
-      .then((res) => { if (!res.ok) throw new Error(); return res.json(); })
-      .then((data) => setMessages(Array.isArray(data) ? data : []))
-      .catch(() => setHistoryError(true))
-      .finally(() => setLoadingHistory(false));
-  }, [myId, providerId]);
-
-  /* ── Optionally fetch provider info ── */
-  useEffect(() => {
-    if (!providerId) return;
-    fetch(`http://localhost:8087/provider/${providerId}`, { credentials: "include" })
-      .then((r) => r.ok ? r.json() : null)
+    if (!myId) return;
+    setConvLoad(true);
+    fetch(`http://localhost:8087/message/conversations/${myId}`, { credentials: "include" })
+      .then((r) => r.json())
       .then((data) => {
-        if (data) {
-          setProviderName(data.businessName || data.name || "Provider");
-          setProviderPhoto(data.profilePhotoUrl || null);
-        }
-      })
-      .catch(() => {});
-  }, [providerId]);
+        setConvs(
+          data.map((c) => ({
+            id: c.peerId,
+            name: c.peerName || c.peerId,
+            lastMsg: c.lastMessage,
+            lastTs: c.lastTimestamp,
+            unread: 0,
+          }))
+         
+        );
+         console.log(data)
+      }
+    )
+      .finally(() => setConvLoad(false));
+      
+  }, [myId]);
 
-  /* ── Auto-scroll ── */
+  /* ── Load messages ───────────────────────────────────── */
   useEffect(() => {
-    if (isAtBottom.current) {
-      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-    }
+    if (!myId || !activeId) return;
+    setMsgLoad(true);
+    fetch(`http://localhost:8087/message/${myId}/${activeId}`, { credentials: "include" })
+      .then((r) => r.json())
+      .then((data) => setMessages(data || []))
+      .finally(() => setMsgLoad(false));
+  }, [myId, activeId]);
+
+  /* ── Auto-scroll ─────────────────────────────────────── */
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  /* ── Scroll detection ── */
-  const handleScroll = useCallback(() => {
-    const el = messagesRef.current;
-    if (!el) return;
-    const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 60;
-    isAtBottom.current = atBottom;
-    if (atBottom) {
-      setShowScrollFab(false);
-      setUnreadCount(0);
-    }
-  }, []);
-
-  /* ── Focus on mount ── */
-  useEffect(() => { inputRef.current?.focus(); }, []);
-
-  /* ── Toast helper ── */
-  const showToast = (msg) => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 2500);
-  };
-
-  /* ── Send ── */
-  const handleSend = useCallback(() => {
-    if (!input.trim()) return;
-    if (!connected) { showToast("Reconnecting… please wait"); return; }
-    if (!myId)       { showToast("Please log in again"); return; }
-
+  /* ── Send ────────────────────────────────────────────── */
+  const handleSend = () => {
+    if (!input.trim() || !activeId) return;
     sendMessage({
-      userId:     myId,
-      providerId: providerId,
-      senderId:   myId,
-      receiverId: providerId,
-      content:    input.trim(),
+      userId: myId, providerId: activeId,
+      senderId: myId, receiverId: activeId,
+      content: input.trim(),
     });
-
     setInput("");
     inputRef.current?.focus();
-    // Reset textarea height
-    if (inputRef.current) inputRef.current.style.height = "auto";
-  }, [input, connected, myId, providerId, sendMessage]);
+  };
 
   const handleKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
   };
 
-  const handleTextareaChange = (e) => {
-    setInput(e.target.value);
-    e.target.style.height = "auto";
-    e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px";
+  /* ── Open conversation ───────────────────────────────── */
+  const openConv = (c) => {
+    setActiveId(c.id);
+    setActiveName(c.name);
+    setConvs((prev) => prev.map((x) => x.id === c.id ? { ...x, unread: 0 } : x));
+    navigate(`/chat/${c.id}`);
   };
 
-  const scrollToBottom = () => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-    setShowScrollFab(false);
-    setUnreadCount(0);
-  };
-
-  /* ── Group messages ── */
-  const grouped = messages.map((msg, i) => ({
-    msg,
-    showAvatar: !messages[i - 1] || messages[i - 1].senderId !== msg.senderId,
-    showDate:   shouldShowDateDivider(messages, i),
-  }));
-
-  const canSend = connected && !!input.trim();
-
-  /* ══════════════════════════════════════════════════════════
-     RENDER
-  ══════════════════════════════════════════════════════════ */
+  /* ── Render ──────────────────────────────────────────── */
   return (
-    <div className="ch-root">
+    <>
+    <Navbar/>
+    <div className={`ch-shell ${activeId ? "ch-shell--chat-open" : ""}`}>
 
-      {/* ── Header ── */}
-      <header className="ch-header">
-        <button className="ch-back-btn" onClick={() => navigate(-1)} title="Go back">
-          <svg width={18} height={18} viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" strokeWidth={2.2} strokeLinecap="round">
-            <path d="M19 12H5M12 5l-7 7 7 7" />
-          </svg>
-        </button>
-
-        <Avatar name={providerName} src={providerPhoto} size="md" />
-
-        <div className="ch-header__info">
-          <span className="ch-header__name">{providerName}</span>
-          <span className="ch-header__status">
-            <span className={`ch-status-dot ${connected ? "ch-status-dot--on" : "ch-status-dot--off"}`} />
-            {connected ? "Online" : "Connecting…"}
+      {/* ── SIDEBAR ── */}
+      <aside className="ch-sidebar">
+        <div className="ch-sidebar__head">
+          <div className="ch-sidebar__me">
+            <Avatar name={myName} size="md" />
+            <div className="ch-sidebar__me-info">
+              <span className="ch-sidebar__me-name">{myName}</span>
+            </div>
+          </div>
+          <span className={connected ? "ch-pill ch-pill--on" : "ch-pill ch-pill--off"}>
+            {connected ? "Live" : "Offline"}
           </span>
         </div>
 
-        {/* Optional: more actions */}
-        <div className="ch-header__actions">
-          <button className="ch-icon-btn" title="Call provider">
-            <svg width={18} height={18} viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" strokeWidth={2} strokeLinecap="round">
-              <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8 19.79 19.79 0 01.22 1.18a2 2 0 012-2.18h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 6.91a16 16 0 006.18 6.18l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
-            </svg>
-          </button>
-        </div>
-      </header>
-
-      {/* ── Offline banner ── */}
-      {!connected && (
-        <div className="ch-offline-banner">
-          <svg width={14} height={14} viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" strokeWidth={2} strokeLinecap="round">
-            <path d="M1 1l22 22M16.72 11.06A10.94 10.94 0 0119 12.55M5 12.55a10.94 10.94 0 015.17-2.39M10.71 5.05A16 16 0 0122.56 9M1.42 9a15.91 15.91 0 014.7-2.88M8.53 16.11a6 6 0 016.95 0M12 20h.01"/>
-          </svg>
-          Reconnecting to chat…
-        </div>
-      )}
-
-      {/* ── Messages ── */}
-      <div className="ch-messages" ref={messagesRef} onScroll={handleScroll}>
-
-        {loadingHistory && <MessageSkeleton />}
-
-        {historyError && !loadingHistory && (
-          <div className="ch-state-box ch-state-box--error">
-            <span className="ch-state-box__icon">⚠️</span>
-            <p className="ch-state-box__title">Couldn't load messages</p>
-            <p className="ch-state-box__sub">Check your connection and try again.</p>
-            <button className="ch-retry-btn" onClick={() => window.location.reload()}>
-              Retry
-            </button>
-          </div>
-        )}
-
-        {!loadingHistory && !historyError && messages.length === 0 && (
-          <div className="ch-state-box ch-state-box--empty">
-            <span className="ch-state-box__icon">💬</span>
-            <p className="ch-state-box__title">No messages yet</p>
-            <p className="ch-state-box__sub">Say hello to {providerName}!</p>
-          </div>
-        )}
-
-        {!loadingHistory && grouped.map(({ msg, showAvatar, showDate }, i) => (
-          <div key={msg.id ?? i}>
-            {showDate && <DateDivider timestamp={msg.timestamp} />}
-            <MessageBubble
-              msg={msg}
-              isMine={msg.senderId === myId}
-              showAvatar={showAvatar}
-              providerName={providerName}
-              providerPhoto={providerPhoto}
-            />
-          </div>
-        ))}
-
-        {isTyping && <TypingIndicator />}
-        <div ref={bottomRef} />
-      </div>
-
-      {/* ── Scroll-to-bottom FAB ── */}
-      {showScrollFab && (
-        <button className="ch-scroll-fab" onClick={scrollToBottom} title="Scroll to latest">
-          {unreadCount > 0 && (
-            <span className="ch-scroll-fab__badge">
-              {unreadCount > 99 ? "99+" : unreadCount}
-            </span>
+        <div className="ch-sidebar__title-row">
+          <span className="ch-sidebar__title">Messages</span>
+          {convs.length > 0 && (
+            <span className="ch-sidebar__total-badge">{convs.length}</span>
           )}
-          <svg width={16} height={16} viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" strokeWidth={2.5} strokeLinecap="round">
-            <path d="M12 5v14M5 12l7 7 7-7" />
-          </svg>
-        </button>
-      )}
-
-      {/* ── Toast ── */}
-      {toast && <div className="ch-toast">{toast}</div>}
-
-      {/* ── Input bar ── */}
-      <div className="ch-input-bar">
-        <div className="ch-input-wrap">
-          <textarea
-            ref={inputRef}
-            className="ch-textarea"
-            value={input}
-            onChange={handleTextareaChange}
-            onKeyDown={handleKeyDown}
-            placeholder="Type a message…"
-            rows={1}
-            disabled={!myId}
-          />
         </div>
 
-        <button
-          className={`ch-send-btn ${canSend ? "ch-send-btn--active" : "ch-send-btn--inactive"}`}
-          onClick={handleSend}
-          disabled={!canSend}
-          title="Send (Enter)"
-        >
-          <svg width={18} height={18} viewBox="0 0 24 24" fill="none">
-            <path d="M22 2L11 13" stroke="currentColor" strokeWidth={2} strokeLinecap="round"/>
-            <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" strokeWidth={2}
-              strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </button>
-      </div>
+        <div className="ch-conv-list">
+          {convLoad && (
+            <div className="ch-side-skel">
+              {[1, 2, 3, 4].map((n) => (
+                <div key={n} className="ch-side-skel__item">
+                  <div className="ch-side-skel__av" />
+                  <div className="ch-side-skel__lines">
+                    <div className="ch-side-skel__line ch-side-skel__line--60" />
+                    <div className="ch-side-skel__line ch-side-skel__line--40" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
+          {!convLoad && convs.length === 0 && (
+            <div className="ch-conv-empty">
+              <span>💬</span>
+              <p>No conversations yet</p>
+              <small>Start a chat from a provider profile</small>
+            </div>
+          )}
+
+          {convs.map((c) => (
+            <button
+              key={c.id}
+              className={`ch-conv ${c.id === activeId ? "ch-conv--active" : ""}`}
+              onClick={() => openConv(c)}
+            >
+              <div className="ch-conv__av-wrap">
+                <Avatar name={c.name} size="conv" />
+              </div>
+              <div className="ch-conv__body">
+                <div className="ch-conv__top">
+                  <span className="ch-conv__name">{c.name}</span>
+                  <span className="ch-conv__time">{formatPreview(c.lastTs)}</span>
+                </div>
+                <div className="ch-conv__bottom">
+                  <span className="ch-conv__preview">{c.lastMsg || "No messages yet"}</span>
+                  {c.unread > 0 && (
+                    <span className="ch-conv__badge">{c.unread > 9 ? "9+" : c.unread}</span>
+                  )}
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </aside>
+
+      {/* ── PANEL ── */}
+      <div className="ch-panel">
+
+        {!activeId && (
+          <div className="ch-panel-empty">
+            <div className="ch-panel-empty__icon-wrap">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+            </div>
+            <p className="ch-panel-empty__title">Your messages</p>
+            <p className="ch-panel-empty__sub">Select a conversation from the list to start chatting</p>
+          </div>
+        )}
+
+        {activeId && (
+          <>
+            {/* Header */}
+            <div className="ch-panel-head">
+              <Avatar name={activeName} size="md" />
+              <div className="ch-panel-head__info">
+                <span className="ch-panel-head__name">{activeName || activeId}</span>
+                <div className="ch-panel-head__status">
+                  <span className={connected ? "ch-dot ch-dot--on" : "ch-dot ch-dot--off"} />
+                  <span>{connected ? "Online" : "Offline"}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Messages */}
+            <div className="ch-messages">
+              {msgLoad && (
+                <div className="ch-skel">
+                  {[80, 140, 100, 170, 90].map((w, i) => (
+                    <div key={i} className={`ch-skel__row ${i % 2 === 0 ? "" : "ch-skel__row--r"}`}>
+                      <div className="ch-skel__av" />
+                      <div className="ch-skel__bubble" style={{ width: w }} />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {!msgLoad && messages.length === 0 && (
+                <div className="ch-state ch-state--empty">
+                  <div className="ch-state__icon">👋</div>
+                  <p className="ch-state__title">Say hello!</p>
+                  <p className="ch-state__sub">Be the first to send a message</p>
+                </div>
+              )}
+
+              {messages.map((m, i) => {
+                const isMine = m.senderId === myId;
+                return (
+                  <div
+                    key={m.id || i}
+                    className={`ch-row ${isMine ? "ch-row--mine" : "ch-row--theirs"}`}
+                  >
+                    {!isMine && (
+                      <div className="ch-row__av-slot">
+                        {(i === messages.length - 1 || messages[i + 1]?.senderId !== m.senderId) && (
+                          <Avatar name={activeName} size="sm" />
+                        )}
+                      </div>
+                    )}
+                    <div className={`ch-bwrap ${isMine ? "ch-bwrap--mine" : "ch-bwrap--theirs"}`}>
+                      <div className={`ch-bubble ${isMine ? "ch-bubble--mine" : "ch-bubble--theirs"}`}>
+                        {m.content}
+                      </div>
+                      <span className="ch-bubble__time">{formatTime(m.timestamp)}</span>
+                    </div>
+                  </div>
+                );
+              })}
+
+              <div ref={bottomRef} />
+            </div>
+
+            {/* Input bar */}
+            <div className="ch-input-bar">
+              <div className="ch-input-wrap">
+                <input
+                  ref={inputRef}
+                  className="ch-textarea"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Type a message…"
+                  autoComplete="off"
+                />
+              </div>
+              <button
+                className={`ch-send ${input.trim() ? "ch-send--on" : "ch-send--off"}`}
+                onClick={handleSend}
+                disabled={!input.trim()}
+                aria-label="Send message"
+              >
+                <SendIcon />
+              </button>
+            </div>
+          </>
+        )}
+      </div>
     </div>
+    <Footer/>
+    </>
   );
 }

@@ -30,7 +30,7 @@ const SECURITY_ITEMS = [
   "GDPR compliant storage",
 ];
 
-/* ─── Local storage helpers ──────────────────────────────── */
+let LOCAL_KEY="user_profile";
 const loadLocalUser = () => {
   try { return JSON.parse(localStorage.getItem(LOCAL_KEY)); }
   catch { return null; }
@@ -38,7 +38,6 @@ const loadLocalUser = () => {
 const saveLocalUser = (data) =>
   localStorage.setItem(LOCAL_KEY, JSON.stringify(data));
 
-/* ─── FieldRow ───────────────────────────────────────────── */
 function FieldRow({ label, fieldKey, value, editingField, editValue, setEditValue, onStartEdit, onSave, onCancel }) {
   const isEditing = editingField === fieldKey;
 
@@ -90,7 +89,6 @@ function FieldRow({ label, fieldKey, value, editingField, editValue, setEditValu
   );
 }
 
-/* ─── Profile Page ───────────────────────────────────────── */
 const Profile = () => {
   const [user,            setUser]            = useState(null);
   const [editingField,    setEditingField]    = useState(null);
@@ -101,7 +99,6 @@ const Profile = () => {
   const [locationLoading, setLocationLoading] = useState(false);
 
 
-  /* ── Fetch user ── */
   useEffect(() => {
     getCurrentUser()
       .then((res) => { setUser(res.data); saveLocalUser(res.data); })
@@ -112,8 +109,6 @@ const Profile = () => {
       })
       .finally(() => setLoading(false));
   }, []);
-
-  /* ── Field edit handlers ── */
   const startEdit  = (field, current) => { setEditingField(field); setEditValue(current || ""); };
   const cancelEdit = () => { setEditingField(null); setEditValue(""); };
 
@@ -170,14 +165,12 @@ const Profile = () => {
     );
   };
 
-  /* ── Logout ── */
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem(LOCAL_KEY);
     keycloak.logout({ redirectUri: "http://localhost:5173" });
   };
 
-  /* ── Loading screen ── */
   if (loading) {
     return (
       <div className="pr-loading">
@@ -189,9 +182,6 @@ const Profile = () => {
 
   const avatarSrc = preview || user?.profilePhotoUrl;
 
-  /* ══════════════════════════════════════════════════════
-     RENDER
-     ══════════════════════════════════════════════════════ */
   return (
   <>
   <Navbar/>

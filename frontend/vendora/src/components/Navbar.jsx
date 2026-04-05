@@ -24,39 +24,13 @@ export default function Navbar() {
           <span className="uc-logo-text">Vendora</span>
         </a>
 
-        {/* Location */}
-        <button className="uc-navbar__location">
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-          >
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
-            <circle cx="12" cy="10" r="3" />
-          </svg>
-          <span>{location}</span>
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-          >
-            <polyline points="6 9 12 15 18 9" />
-          </svg>
-        </button>
-
         {/* Nav links */}
         <div className="uc-navbar__links">
           <Link to="/providers" className="uc-nav-link">
-          service
+            <b>Service</b>
           </Link>
           <Link to="/booking" className="uc-nav-link">
-          bookings
+             <b>Bookings</b> 
           </Link>
         </div>
 
@@ -65,8 +39,8 @@ export default function Navbar() {
           <a href="/profile" className="uc-btn uc-btn--ghost">
             {user?.userName.replace("@gmail.com","")||"login"}
           </a>
-          <a href="/profile" className="uc-btn uc-btn--primary">
-            Get the app
+          <a href="/chat" className="uc-btn uc-btn--primary">
+            Connect
           </a>
         </div>
       </div>

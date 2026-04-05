@@ -1,5 +1,6 @@
 package com.vendora.chat_service.facade;
 
+import com.vendora.chat_service.dto.ChatConversationDTO;
 import com.vendora.chat_service.dto.ChatMessageDTO;
 import com.vendora.chat_service.model.ChatRoom;
 import com.vendora.chat_service.model.Message;
@@ -34,5 +35,9 @@ public class ChatFacade {
     public List<Message> getChatHistory(String userId,String providerId){
         ChatRoom room=chatRoomService.getOrCreateRoom(userId,providerId);
         return messageService.getMessages(room.getId());
+    }
+
+    public List<ChatConversationDTO> getConversations(String userId) {
+        return messageService.getConversations(userId);
     }
 }

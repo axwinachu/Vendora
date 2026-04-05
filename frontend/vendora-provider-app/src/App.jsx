@@ -1,9 +1,15 @@
 import React from 'react'
 import ChatPage from './page/ChatPage'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 function App() {
   return (
-    <ChatPage/>
+    <Router>
+      <Routes>
+        <Route path='/' element={<ChatPage/>}/>
+      </Routes>
+    </Router>
+    
   )
 }
 

@@ -1,6 +1,7 @@
 package com.booking_service.booking_service.enums;
 
 public enum ServiceCategory {
+    IT_SERVICES,
     PLUMBING,
     ELECTRICAL,
     CLEANING,
