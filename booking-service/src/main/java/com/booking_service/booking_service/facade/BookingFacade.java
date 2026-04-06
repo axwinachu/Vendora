@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.security.Provider;
 import java.util.List;
 
 @Slf4j
@@ -28,15 +27,23 @@ public class BookingFacade {
 
     //helper
     private BookingEvent toEvent(Booking booking,String eventType){
+        var customer=userServiceClient.getUserById(booking.getCustomerId());
+        var provider=providerServiceClient.getProviderById(booking.getProviderId());
         return BookingEvent.builder()
                 .bookingId(booking.getId())
                 .customerId(booking.getCustomerId())
+                .customerEmail(customer.getEmail())
+                .customerName(customer.getName())
                 .providerId(booking.getProviderId())
+                .providerEmail(provider.getEmail())
+                .providerName(provider.getBusinessName())
                 .status(booking.getStatus())
                 .serviceCategory(booking.getServiceCategory())
                 .scheduledDate(booking.getScheduledDate())
                 .scheduledTime(booking.getScheduledTime())
                 .eventType(eventType)
+                .address(booking.getAddress())
+                .cancellationDetails(booking.getCancellationReason())
                 .build();
     }
     private  BookingResponse toResponse(Booking booking){
@@ -75,6 +82,7 @@ public class BookingFacade {
                 .scheduledTime(request.getScheduledTime())
                 .address(request.getAddress())
                 .notes(request.getNotes())
+                .basePrice(provider.getBasePrice())
                 .status(BookingStatus.PENDING)
                 .build();
         Booking saved=bookingService.save(booking);
@@ -110,6 +118,7 @@ public class BookingFacade {
         return toResponse(booking);
     }
     public BookingResponse start(String bookingId){
+
         return toResponse(bookingService.start(bookingId));
     }
     public BookingResponse complete(String bookingId){

@@ -5,7 +5,6 @@ import App from "./App.jsx";
 import keycloak from "./keycloak/keycloak.js";
 
 const USER_APP_URL = "http://localhost:5173";
-const PROVIDER_APP_URL = "http://localhost:5174";
 
 keycloak
   .init({

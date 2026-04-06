@@ -28,8 +28,18 @@
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.44/lombok-1.18.44.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.44/lombok-1.18.44.jar" />
         </processorPath>
         <module name="chat-service" />
+      </profile>
+      <profile name="Annotation profile for notification-service" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.44/lombok-1.18.44.jar" />
+        </processorPath>
+        <module name="notification-service" />
       </profile>
     </annotationProcessing>
   </component>
@@ -40,6 +50,7 @@
       <module name="booking-service" options="-parameters" />
       <module name="chat-service" options="-parameters" />
       <module name="discovery-service" options="-parameters" />
+      <module name="notification-service" options="-parameters" />
       <module name="provider-service" options="-parameters" />
       <module name="user-service" options="-parameters" />
     </option>

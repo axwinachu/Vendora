@@ -17,10 +17,16 @@ import java.time.LocalTime;
 public class BookingEvent {
     private String bookingId;
     private String customerId;
+    private String customerName;
+    private String customerEmail;
     private String providerId;
+    private String providerName;
+    private String providerEmail;
     private BookingStatus status;
     private ServiceCategory serviceCategory;
     private LocalDate scheduledDate;
     private LocalTime scheduledTime;
     private String eventType;
+    private String address;
+    private String cancellationDetails;
 }

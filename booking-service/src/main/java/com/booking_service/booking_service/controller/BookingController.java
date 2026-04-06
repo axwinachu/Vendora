@@ -47,4 +47,8 @@ public class BookingController {
     public BookingResponse markPaid(@PathVariable String id){
         return bookingFacade.markPaid(id);
     }
+    @PatchMapping("/{id}/start")
+    public BookingResponse start(@PathVariable String id) {
+        return bookingFacade.start(id);
+    }
 }

@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 public class ProviderResponse {
     private String userId;
     private String businessName;
+    private String email;
     private Boolean isAvailable;
     private Double basePrice;
     private String status;

@@ -33,6 +33,7 @@ public class Booking {
     private String providerId;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private ServiceCategory serviceCategory;
 
     @Column(nullable = false)

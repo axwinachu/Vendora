@@ -17,6 +17,7 @@ import java.util.List;
 public class ProviderResponse {
     private String userId;
     private String businessName;
+    private String email;
     private String description;
     private ServiceCategory serviceCategory;
     private District district;
