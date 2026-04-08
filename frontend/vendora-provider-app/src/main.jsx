@@ -16,17 +16,15 @@ keycloak
       keycloak.login();
       return;
     }
-    const realmRoles = keycloak.tokenParsed?.realm_access?.roles || [];
-    const clientRoles =
-      keycloak.tokenParsed?.resource_access?.["vendora-app"]?.roles || [];
 
-    const roles = [...realmRoles, ...clientRoles];
+    const realmRoles  = keycloak.tokenParsed?.realm_access?.roles || [];
+    const clientRoles = keycloak.tokenParsed?.resource_access?.["vendora-app"]?.roles || [];
+    const roles       = [...realmRoles, ...clientRoles];
 
     console.log("Roles:", roles);
 
-    //PROVIDER access check
+    // PROVIDER access check
     if (!roles.includes("PROVIDER")) {
-      //Redirect USER → user app
       if (roles.includes("USER")) {
         window.location.replace(USER_APP_URL);
       } else {
@@ -35,12 +33,25 @@ keycloak
       return;
     }
 
-    // ✅ Store token + user info
+    // ✅ Store token
     localStorage.setItem("token", keycloak.token);
-    localStorage.setItem(
-      "user",
-      JSON.stringify(keycloak.tokenParsed)
-    );
+
+    // ✅ Store user_profile in the shape the chat page expects:
+    //    { id, userName, profilePhotoUrl }
+    //
+    //    Keycloak token fields:
+    //      sub              → unique user id  (use as myId)
+    //      preferred_username or email → display name
+    //      picture          → avatar url (optional, not always present)
+    const tp = keycloak.tokenParsed;
+    const userProfile = {
+      id:              tp.sub,                          // provider's unique ID
+      userName:        tp.preferred_username || tp.email || tp.sub,
+      profilePhotoUrl: tp.picture || null,
+    };
+    localStorage.setItem("user_profile", JSON.stringify(userProfile));
+
+    console.log("Provider profile stored:", userProfile);
 
     // ✅ Render app
     createRoot(document.getElementById("root")).render(
@@ -49,7 +60,7 @@ keycloak
       </StrictMode>
     );
 
-    // ✅ Token refresh
+    // ✅ Token refresh every 30s — also keeps user_profile in sync
     setInterval(() => {
       keycloak
         .updateToken(60)
@@ -57,6 +68,13 @@ keycloak
           if (refreshed) {
             console.log("Token refreshed");
             localStorage.setItem("token", keycloak.token);
+            // Refresh profile in case token fields changed
+            const tp2 = keycloak.tokenParsed;
+            localStorage.setItem("user_profile", JSON.stringify({
+              id:              tp2.sub,
+              userName:        tp2.preferred_username || tp2.email || tp2.sub,
+              profilePhotoUrl: tp2.picture || null,
+            }));
           }
         })
         .catch(() => {

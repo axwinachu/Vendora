@@ -2,6 +2,7 @@ package com.booking_service.booking_service.config;
 
 import com.booking_service.booking_service.filter.HeadAuthFilter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -15,6 +16,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+@Slf4j
 public class SecurityConfig {
 
     private final HeadAuthFilter headAuthFilter;
@@ -29,14 +31,23 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
 
-                        .requestMatchers(HttpMethod.POST, "/booking/create")
+                        // Customer creates booking
+                        .requestMatchers(HttpMethod.POST,  "/booking/create")
                         .hasRole("CUSTOMER")
 
-                        .requestMatchers(HttpMethod.GET, "/booking/my")
+                        // Both can view their bookings
+                        .requestMatchers(HttpMethod.GET,   "/booking/my")
                         .hasAnyRole("CUSTOMER", "PROVIDER")
-                        .requestMatchers(HttpMethod.GET, "/booking/all")
+
+                        // Admin views all
+                        .requestMatchers(HttpMethod.GET,   "/booking/all")
                         .hasRole("ADMIN")
 
+                        // Any role can view a single booking
+                        .requestMatchers(HttpMethod.GET,   "/booking/*")
+                        .hasAnyRole("CUSTOMER", "PROVIDER", "ADMIN")
+
+                        // Provider actions
                         .requestMatchers(HttpMethod.PATCH, "/booking/*/confirm")
                         .hasRole("PROVIDER")
                         .requestMatchers(HttpMethod.PATCH, "/booking/*/reject")
@@ -46,16 +57,13 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PATCH, "/booking/*/complete")
                         .hasRole("PROVIDER")
 
+                        // Customer or provider can cancel
                         .requestMatchers(HttpMethod.PATCH, "/booking/*/cancel")
                         .hasAnyRole("CUSTOMER", "PROVIDER")
 
-
+                        // FIXED: was ADMIN only — payment-service or provider marks paid
                         .requestMatchers(HttpMethod.PATCH, "/booking/*/paid")
-                        .hasRole("ADMIN")
-
-
-                        .requestMatchers(HttpMethod.GET, "/booking/*")
-                        .hasAnyRole("CUSTOMER", "PROVIDER", "ADMIN")
+                        .hasAnyRole("PROVIDER", "ADMIN")
 
                         .anyRequest().authenticated()
                 )

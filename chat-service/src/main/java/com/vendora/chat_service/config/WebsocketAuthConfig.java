@@ -14,6 +14,7 @@ import java.security.Principal;
 
 @Configuration
 public class WebsocketAuthConfig implements WebSocketMessageBrokerConfigurer {
+    @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
         registration.interceptors(new ChannelInterceptor() {
             @Override

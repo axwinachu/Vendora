@@ -5,20 +5,35 @@ export function useChatSocket(myId, onMessage) {
   const clientRef = useRef(null);
   const [connected, setConnected] = useState(false);
 
+  const onMessageRef = useRef(onMessage);
   useEffect(() => {
+    onMessageRef.current = onMessage;
+  }, [onMessage]);
+
+  useEffect(() => {
+    if (!myId) return;
+
     const client = new Client({
       brokerURL: "ws://localhost:8087/ws",
       connectHeaders: {
-        login: myId,        // This becomes Principal in WebsocketAuthConfig
+        login: String(myId),
       },
+      reconnectDelay: 3000,
+
       onConnect: () => {
         setConnected(true);
-        client.subscribe(`/user/queue/messages`, (frame) => {
-          const msg = JSON.parse(frame.body);
-          onMessage(msg);
+        client.subscribe("/user/queue/messages", (frame) => {
+          try {
+            const msg = JSON.parse(frame.body);
+            onMessageRef.current?.(msg);
+          } catch (e) {
+            console.error("Failed to parse message:", e);
+          }
         });
       },
+
       onDisconnect: () => setConnected(false),
+      onStompError: (frame) => console.error("STOMP error:", frame),
     });
 
     client.activate();

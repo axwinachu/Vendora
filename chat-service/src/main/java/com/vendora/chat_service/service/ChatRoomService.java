@@ -9,15 +9,14 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ChatRoomService {
     private final ChatRoomRepository chatRoomRepository;
-    public ChatRoom getOrCreateRoom(String userId,String providerId){
-        return chatRoomRepository.findByUserIdAndProviderId(userId,providerId)
-                .orElseGet(()->{
-                   return  chatRoomRepository.save(
-                           ChatRoom.builder()
-                                   .userId(userId)
-                                   .providerId(providerId)
-                                   .build()
-                   );
-                });
+    public ChatRoom getOrCreateRoom(String userId, String providerId) {
+        return chatRoomRepository.findByUserIdAndProviderId(userId, providerId)
+                .or(() -> chatRoomRepository.findByUserIdAndProviderId(providerId, userId))
+                .orElseGet(() -> chatRoomRepository.save(
+                        ChatRoom.builder()
+                                .userId(userId)
+                                .providerId(providerId)
+                                .build()
+                ));
     }
 }

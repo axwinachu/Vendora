@@ -206,7 +206,6 @@ const Profile = () => {
   const [locationLoading, setLocationLoading] = useState(false);
   const [availToggling,   setAvailToggling]   = useState(false);
 
-  /* ── Load ── */
   useEffect(() => {
     getProviderProfile()
       .then((res) => { setProvider(res.data); saveLocal(res.data); })
