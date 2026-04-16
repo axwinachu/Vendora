@@ -17,4 +17,6 @@ public interface MessageRepository extends JpaRepository<Message,Long> {
     ORDER BY m.timestamp DESC
 """)
     List<Message> findAllUserMessages(@Param("userId") String userId);
+
+    List<Message> findByChatRoomIdOrderByTimestampAsc(Long chatRoomId);
 }

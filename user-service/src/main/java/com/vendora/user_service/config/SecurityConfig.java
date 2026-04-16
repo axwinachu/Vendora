@@ -28,7 +28,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/user/all").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/user/email/**").hasAnyRole("CUSTOMER", "PROVIDER", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/user/district/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/user/*").hasAnyRole("CUSTOMER", "PROVIDER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/user/*").permitAll()
                         .requestMatchers(HttpMethod.POST, "/user/*/photo").hasAnyRole("CUSTOMER", "PROVIDER", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/user/*/location/gps").hasAnyRole("CUSTOMER", "PROVIDER", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/user/*/location/address").hasAnyRole("CUSTOMER", "PROVIDER", "ADMIN")

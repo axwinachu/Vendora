@@ -9,7 +9,10 @@ import keycloak from "../keycloak.js";
 import "../styles/Profile.css";
 import Navbar from "../components/Navbar.jsx"
 import Footer from "../components/Footer.jsx";
-
+import { FaStar, FaCheckCircle, FaMedal } from "react-icons/fa";
+import { MdLocationOn } from "react-icons/md";
+import { FiEdit2, FiLogOut } from "react-icons/fi";
+import { HiOutlineCamera } from "react-icons/hi";
 const DISTRICTS = ["PALAKAD", "COIMBATORE"];
 
 const PROFILE_FIELDS = [
@@ -19,9 +22,9 @@ const PROFILE_FIELDS = [
 ];
 
 const STATS = [
-  { icon: "⭐", label: "Rating",    value: "4.9" },
-  { icon: "✅", label: "Jobs Done", value: "128" },
-  { icon: "🏅", label: "Badge",     value: "Pro" },
+  { icon: <FaStar />, label: "Rating", value: "4.9" },
+  { icon: <FaCheckCircle />, label: "Jobs Done", value: "128" },
+  { icon: <FaMedal />, label: "Badge", value: "Pro" },
 ];
 
 const SECURITY_ITEMS = [

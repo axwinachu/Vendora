@@ -11,6 +11,7 @@ public class ChatConversationDTO {
 
     private String peerId;
     private String peerName;
+    private String peerImage;
     private String lastMessage;
     private LocalDateTime lastTimestamp;
 }

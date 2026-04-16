@@ -24,6 +24,22 @@ spring:
       enabled: true
       max-file-size: 5MB
       max-request-size: 20MB
+  kafka:
+    bootstrap-servers: localhost:9092
+
+    consumer:
+      group-id: provider-group
+      auto-offset-reset: earliest
+      key-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+
+    properties:
+      spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
+      spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+      spring.json.trusted.packages: "*"
+      spring.json.value.default.type: com.example.provider_service.dto.ReviewCreatedEvent
+
+
 
   jackson:
     serialization:
@@ -40,4 +56,3 @@ eureka:
       defaultZone: http://localhost:8761/eureka/
   instance:
     prefer-ip-address: true
-

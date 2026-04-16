@@ -7,9 +7,9 @@ keycloak.init({ onLoad: 'login-required' }).then((authenticated) => {
   if (authenticated) {
     localStorage.setItem('token', keycloak.token);
     ReactDOM.createRoot(document.getElementById('root')).render(
-      <React.StrictMode>
+      
         <App />
-      </React.StrictMode>
+      
     );
 
     setInterval(() => {

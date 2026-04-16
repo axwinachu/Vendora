@@ -1,7 +1,5 @@
 package com.vendora.payment_service.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.vendora.payment_service.enums.PaymentStatus;
 import lombok.Builder;
 import lombok.Data;
 
@@ -10,19 +8,17 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 public class PaymentResponse {
-    private String id;
+
+    private String paymentId;           // internal DB id
+    private String paymentIntentId;     // Stripe ID
+    private String clientSecret;        // used by frontend
+
     private String bookingId;
-    private String customerId;
-    private String providerId;
-    private Long   amountPaise;
-    private Double amountRupees;
-    private PaymentStatus status;
-    private String razorpayPayoutId;
-    private String failureReason;
+    private Double amount;
+    private String currency;
 
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime createdAt;
+    private String status;              // CREATED / SUCCESS / FAILED
+    private String message;
 
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime updatedAt;
+    private LocalDateTime timestamp;
 }

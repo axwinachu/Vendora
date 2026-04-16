@@ -54,6 +54,8 @@ export default function BookingModal({ provider, onClose, onSuccess }) {
         address:         form.address.trim(),
         notes:           form.notes.trim() || null,
       };
+      console.log("FULL Provider Object:", provider);
+      console.log("Sending userId:", provider?.userId);
       const res = await axios.post("/booking/create", payload);
       setStep(2);
       onSuccess?.(res.data);

@@ -1,68 +1,21 @@
 server:
-  port: 8090
-
+  port: 8091
 spring:
   application:
     name: payment-service
-
   datasource:
-    url: jdbc:mysql://localhost:3306/vendora_payment_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Kolkata
+    url: jdbc:mysql://localhost:3306/vendora_db
     username: root
     password: 2465
-    driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
-    open-in-view: false
 
-  data:
-    redis:
-      host: localhost
-      port: 6379
-
-  kafka:
-    bootstrap-servers: localhost:9092
-    consumer:
-      group-id: payment-service-group
-      auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      properties:
-        spring.json.trusted.packages: "*"
-        spring.json.value.default.type: com.vendora.payment_service.dto.BookingCompletedEvent
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-
-  mail:
-    host: smtp.gmail.com
-    port: 587
-    username: your_email@gmail.com
-    password: your_16_char_app_password
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-
-  jackson:
-    serialization:
-      write-dates-as-timestamps: false
-razorpay:
-  key-id: rzp_test_SawH0VHzM86cxb
-  key-secret: a85plYaHlyc158M9OUsXQKzd
-  account-number: 2223330027558515
-
-  webhook-secret: AswinVendora2026
-
-otp:
-  expiry-minutes: 10
+stripe:
+  secret:
+  public:
 
 eureka:
   client:

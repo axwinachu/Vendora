@@ -1,0 +1,167 @@
+/* NAV */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(12px);
+  background: rgba(255,255,255,0.85);
+  transition: 0.25s;
+}
+
+.nav--scrolled {
+  box-shadow: 0 6px 24px rgba(0,0,0,0.06);
+}
+
+/* INNER */
+.nav__inner {
+  max-width: 1200px;
+  margin: auto;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 20px;
+}
+
+/* LOGO */
+.nav__logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.logo-box {
+  width: 34px;
+  height: 34px;
+  background: linear-gradient(135deg, #1B4332, #52B788);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  font-weight: bold;
+}
+
+.logo-text {
+  font-weight: 700;
+  font-size: 18px;
+}
+
+/* LINKS */
+.nav__links {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.nav__links a {
+  padding: 8px 14px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: #555;
+  transition: 0.2s;
+}
+
+.nav__links a:hover {
+  background: #f4f4f4;
+}
+
+.nav__links .active {
+  background: #D8F3DC;
+  color: #1B4332;
+}
+
+/* ACTIONS */
+.nav__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* STATUS */
+.status {
+  font-size: 12px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  background: #eee;
+  cursor: pointer;
+}
+
+.status--on {
+  background: #D8F3DC;
+  color: #1B4332;
+}
+
+/* BELL */
+.bell {
+  position: relative;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.bell__dot {
+  position: absolute;
+  top: 0;
+  right: -2px;
+  width: 6px;
+  height: 6px;
+  background: #FF6B35;
+  border-radius: 50%;
+}
+
+/* PROFILE */
+.profile {
+  position: relative;
+  cursor: pointer;
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1B4332, #52B788);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+/* DROPDOWN */
+.dropdown {
+  position: absolute;
+  top: 45px;
+  right: 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+  padding: 12px;
+  width: 160px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dropdown__name {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.dropdown button {
+  background: none;
+  border: none;
+  padding: 8px;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.dropdown button:hover {
+  background: #f4f4f4;
+}
+
+.logout {
+  color: red;
+}

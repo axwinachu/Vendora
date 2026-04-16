@@ -1,10 +1,12 @@
 package com.vendora.chat_service.dto;
 
+import jakarta.persistence.Transient;
 import lombok.Data;
 
 @Data
 public class ChatMessageDTO {
 
+    private String clientId;
     // Room identity — identifies which chat room this message belongs to
     private String userId;
     private String providerId;

@@ -55,9 +55,9 @@ keycloak
 
     // ✅ Render app
     createRoot(document.getElementById("root")).render(
-      <StrictMode>
+     
         <App keycloak={keycloak} />
-      </StrictMode>
+      
     );
 
     // ✅ Token refresh every 30s — also keeps user_profile in sync

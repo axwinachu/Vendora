@@ -23,6 +23,8 @@ public class SecurityConfig {
 
                         // ── Preflight requests ─────────────────────────
                         .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .pathMatchers("/message/**").permitAll()
+                        .pathMatchers("/ws/**").permitAll()
                         // ── Protected services — JWT required ──────────
                         .pathMatchers("/user/**").authenticated()
                         .pathMatchers("/provider/**").authenticated()

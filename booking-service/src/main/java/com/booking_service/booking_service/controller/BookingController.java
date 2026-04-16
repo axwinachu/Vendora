@@ -7,6 +7,7 @@ import com.booking_service.booking_service.facade.BookingFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.awt.print.Book;
 import java.util.List;
 
 @RestController
@@ -17,6 +18,10 @@ public class BookingController {
     @PostMapping("/create")
     public BookingResponse createBooking(@RequestBody CreateBookingRequest request, @RequestHeader("X-User-Id") String customerId){
         return bookingFacade.createBooking(request,customerId);
+    }
+    @GetMapping("/{id}")
+    public BookingResponse getBookingById(@PathVariable String id) {
+        return bookingFacade.getBookingById(id);
     }
     @GetMapping("/my")
     public List<BookingResponse> getMyBookings(@RequestHeader("X-User-Id") String userId,@RequestHeader("X-User-Role") String role){
@@ -43,7 +48,7 @@ public class BookingController {
         String reason=cancelRequest.getReason();
         return bookingFacade.cancel(id,role,reason);
     }
-    @PatchMapping("/{id}/paid")
+    @PutMapping("/{id}/paid")
     public BookingResponse markPaid(@PathVariable String id){
         return bookingFacade.markPaid(id);
     }

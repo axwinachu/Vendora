@@ -5,6 +5,7 @@ export function useChatSocket(myId, onMessage) {
   const clientRef = useRef(null);
   const [connected, setConnected] = useState(false);
 
+  // Keep onMessage ref fresh to avoid stale closure
   const onMessageRef = useRef(onMessage);
   useEffect(() => {
     onMessageRef.current = onMessage;
@@ -14,12 +15,11 @@ export function useChatSocket(myId, onMessage) {
     if (!myId) return;
 
     const client = new Client({
-      brokerURL: "ws://localhost:8087/ws",
+      brokerURL: "ws://localhost:8888/ws",
       connectHeaders: {
         login: String(myId),
       },
       reconnectDelay: 3000,
-
       onConnect: () => {
         setConnected(true);
         client.subscribe("/user/queue/messages", (frame) => {
@@ -31,7 +31,6 @@ export function useChatSocket(myId, onMessage) {
           }
         });
       },
-
       onDisconnect: () => setConnected(false),
       onStompError: (frame) => console.error("STOMP error:", frame),
     });

@@ -5,19 +5,44 @@ import Footer from "../components/Footer";
 import axios from "../api/axios";
 import BookingModal from "../components/BookingModal";  // ← import
 import "../styles/Provider.css";
+import { useLocation } from "react-router-dom";
+import {
+  FaBroom,
+  FaWrench,
+  FaBolt,
+  FaPaintRoller,
+  FaBug,
+  FaTools
+} from "react-icons/fa";
 
-/* ─── Constants ──────────────────────────────────────────── */
+import {
+  MdElectricalServices,
+  MdOutlineCleaningServices,
+  MdLocationOn
+} from "react-icons/md";
+
+import {
+  GiWoodBeam,
+  GiGardeningShears
+} from "react-icons/gi";
+
+import { BsSnow } from "react-icons/bs";
+import { HiOutlineSearch } from "react-icons/hi";
+
+
+
+
 const CATEGORY_ICONS = {
-  CLEANING:         "🧹",
-  PLUMBING:         "🔧",
-  ELECTRICAL:       "⚡",
-  CARPENTRY:        "🪵",
-  PAINTING:         "🎨",
-  LANDSCAPING:      "🌿",
-  PEST_CONTROL:     "🪲",
-  AC_SERVICE:       "❄️",
-  APPLIANCE_REPAIR: "🔩",
-  DEFAULT:          "🛠️",
+  CLEANING: <MdOutlineCleaningServices />,
+  PLUMBING: <FaWrench />,
+  ELECTRICAL: <FaBolt />,
+  CARPENTRY: <GiWoodBeam />,
+  PAINTING: <FaPaintRoller />,
+  LANDSCAPING: <GiGardeningShears />,
+  PEST_CONTROL: <FaBug />,
+  AC_SERVICE: <BsSnow />,
+  APPLIANCE_REPAIR: <FaTools />,
+  DEFAULT: <FaTools />,
 };
 
 const CATEGORIES = [
@@ -41,7 +66,6 @@ const SORT_OPTIONS = [
   { label: "Most Reviewed",      value: "reviews"    },
 ];
 
-/* ─── StarRating ─────────────────────────────────────────── */
 function StarRating({ rating = 0 }) {
   return (
     <span className="pv-card__stars">
@@ -54,9 +78,7 @@ function StarRating({ rating = 0 }) {
     </span>
   );
 }
-
-/* ─── ProviderCard ───────────────────────────────────────── */
-function ProviderCard({ provider, index, onChat, onBook }) {
+function ProviderCard({ provider, index, onChat, onBook,onView }) {
   const [imgError, setImgError] = useState(false);
 
   const catIcon  = CATEGORY_ICONS[provider.serviceCategory] || CATEGORY_ICONS.DEFAULT;
@@ -64,12 +86,11 @@ function ProviderCard({ provider, index, onChat, onBook }) {
   const isOnline = provider.isAvailable;
 
   const providerId = provider.userId || provider.id;
-
   return (
-    <div className="pv-card" style={{ animationDelay: `${index * 0.05}s` }}>
+    <div className="pv-card" style={{ animationDelay: `${index * 0.05}s` }} >
 
       {/* Image / Avatar */}
-      <div className="pv-card__img-wrap">
+      <div className="pv-card__img-wrap" onClick={() => onView(provider.userId)}>
         {showImg ? (
           <img
             className="pv-card__img"
@@ -108,8 +129,8 @@ function ProviderCard({ provider, index, onChat, onBook }) {
           </span>
         </div>
 
-        <div className="pv-card__location">
-          <span className="pv-card__location-icon">📍</span>
+        <div className="pv-card__location" onClick={() => onView(provider.userId)}>
+          <span className="pv-card__location-icon"><MdLocationOn /></span>
           {provider.district || "Location N/A"}
           {provider.distanceKm != null && ` · ${provider.distanceKm.toFixed(1)} km`}
         </div>
@@ -180,6 +201,7 @@ function SkeletonCard() {
 /* ─── Provider Page ──────────────────────────────────────── */
 export default function Provider() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [providers,      setProviders]      = useState([]);
   const [filtered,       setFiltered]       = useState([]);
@@ -188,11 +210,24 @@ export default function Provider() {
   const [search,         setSearch]         = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
   const [sortBy,         setSortBy]         = useState("rating");
+  
   const [availableOnly,  setAvailableOnly]  = useState(false);
-  const [bookingProvider, setBookingProvider] = useState(null); // null = closed
+  const [bookingProvider, setBookingProvider] = useState(null);
+
+   useEffect(() => {
+  const params = new URLSearchParams(location.search);
+  const searchQuery = params.get("search");
+
+  if (searchQuery) {
+    setSearch(searchQuery);
+  }
+}, [location.search]);
+
   const handleChat = (providerId) => navigate(`/chat/${providerId}`);
   const handleBook = (provider) => setBookingProvider(provider);
-
+  const handleView = (providerId) => {
+  navigate(`/provider/${providerId}`);
+};
   const handleBookingSuccess = (bookingResponse) => {
     console.log("Booking created:", bookingResponse);
   };
@@ -245,6 +280,7 @@ export default function Provider() {
     setActiveCategory("All");
     setAvailableOnly(false);
   };
+
   console.log(providers)
   return (
     <div>
@@ -272,7 +308,7 @@ export default function Provider() {
                   onClick={() => setActiveCategory(cat.key)}
                 >
                   <span className="pv-sidebar__cat-icon">
-                    {cat.key === "All" ? "🗂️" : (CATEGORY_ICONS[cat.key] || "🛠️")}
+                    {cat.key === "All" ? <FaTools /> : (CATEGORY_ICONS[cat.key] || "🛠️")}
                   </span>
                   {cat.label}
                   <span className="pv-sidebar__cat-count">{countFor(cat.key)}</span>
@@ -284,7 +320,6 @@ export default function Provider() {
           <div className="pv-sidebar__divider" />
 
           <div className="pv-sidebar__block">
-            <p className="pv-sidebar__title">Availability</p>
             <div
               className={`pv-avail-toggle${availableOnly ? " pv-avail-toggle--on" : ""}`}
               onClick={() => setAvailableOnly((v) => !v)}
@@ -348,7 +383,7 @@ export default function Provider() {
 
             {!loading && !error && filtered.length === 0 && (
               <div className="pv-empty">
-                <span className="pv-empty__icon">🔍</span>
+                <span className="pv-empty__icon"><HiOutlineSearch /></span>
                 <p className="pv-empty__title">No providers found</p>
                 <p className="pv-empty__sub">Try adjusting your filters or search term.</p>
                 <button className="uc-btn uc-btn--ghost" onClick={clearFilters}>
@@ -365,6 +400,7 @@ export default function Provider() {
                 index={i}
                 onChat={handleChat}
                 onBook={handleBook}
+                onView={()=>handleView(p.userId)}
               />
             ))}
           </div>

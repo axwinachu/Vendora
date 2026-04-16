@@ -8,5 +8,9 @@ public enum ServiceCategory {
     PHOTOGRAPHY,
     SALE_MARKETING,
     TUTORING,
+    ELECTRICIAN,
+    PLUMBER,
+    AC_REPAIR,
+    HOUSE_CLEANING,
     OTHERS
 }

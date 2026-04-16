@@ -62,8 +62,8 @@ public class SecurityConfig {
                         .hasAnyRole("CUSTOMER", "PROVIDER")
 
                         // FIXED: was ADMIN only — payment-service or provider marks paid
-                        .requestMatchers(HttpMethod.PATCH, "/booking/*/paid")
-                        .hasAnyRole("PROVIDER", "ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/booking/*/paid")
+                        .hasAnyRole("PROVIDER", "ADMIN","CUSTOMER")
 
                         .anyRequest().authenticated()
                 )

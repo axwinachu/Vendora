@@ -63,6 +63,26 @@ spring:
               filters:
                 - name: KeycloakHeader
 
+            - id: payment-service
+              uri: lb://payment-service
+              predicates:
+                - Path=/payments/**
+              filters:
+                - name: KeycloakHeader
+
+            - id: review-service
+              uri: lb://review-service
+              predicates:
+                - Path=/review/**
+              filters:
+                - name: KeycloakHeader
+
+            - id: chat-service
+              uri: lb:ws://chat-service
+              predicates:
+                - Path=/message/**,/ws/**
+
+
 
 
 eureka:

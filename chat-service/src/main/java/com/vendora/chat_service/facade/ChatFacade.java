@@ -23,7 +23,7 @@ public class ChatFacade {
     public void handleSendMessage(ChatMessageDTO dto) {
         ChatRoom room=chatRoomService.getOrCreateRoom(dto.getUserId(),dto.getProviderId());
 
-        Message saved=messageService.saveMessage(room, dto.getSenderId(),dto.getReceiverId(), dto.getContent());
+        Message saved=messageService.saveMessage(room, dto.getSenderId(),dto.getReceiverId(), dto.getContent(),dto.getClientId());
 
         messagingTemplate.convertAndSendToUser(dto.getReceiverId(),"/queue/messages",saved);
 

@@ -848,3 +848,331 @@
   .bk-detail__header,
   .bk-detail__body { padding-left: 18px; padding-right: 18px; }
 }
+/* 🔹 Overlay */
+.bk-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+/* 🔹 Modal Box */
+.bk-modal {
+  width: 100%;
+  max-width: 420px;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+  animation: fadeInScale 0.25s ease;
+}
+
+/* 🔹 Title */
+.bk-modal h3 {
+  margin-bottom: 16px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* 🔹 Input */
+.bk-modal input,
+.bk-modal textarea {
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+  outline: none;
+  transition: 0.2s;
+}
+
+/* 🔹 Focus effect */
+.bk-modal input:focus,
+.bk-modal textarea:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+/* 🔹 Textarea */
+.bk-modal textarea {
+  min-height: 90px;
+  resize: none;
+}
+
+/* 🔹 Buttons container */
+.bk-modal button {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  margin-top: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+/* 🔹 Submit Button */
+.bk-modal button:first-of-type {
+  background: #16a34a;
+  color: white;
+  font-weight: 500;
+}
+
+.bk-modal button:first-of-type:hover {
+  background: #15803d;
+}
+
+/* 🔹 Cancel Button */
+.bk-modal button:last-of-type {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.bk-modal button:last-of-type:hover {
+  background: #e5e7eb;
+}
+
+/* 🔹 Animation */
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+/* ═══════════════════════════════════════════════════════════
+   ADD THESE TO THE BOTTOM OF YOUR Booking.css
+   ═══════════════════════════════════════════════════════════ */
+
+/* ─── Star Rating ─────────────────────────────────────────── */
+.bk-stars {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.bk-stars__row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.bk-stars__btn {
+  background: none;
+  border: none;
+  padding: 2px;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: background 0.15s, transform 0.12s;
+}
+
+.bk-stars__btn:hover {
+  background: rgba(245, 158, 11, 0.08);
+  transform: scale(1.12);
+}
+
+.bk-stars__btn:active {
+  transform: scale(0.95);
+}
+
+.bk-stars__btn svg {
+  width: 28px;
+  height: 28px;
+  fill: #e5e7eb;        /* unlit: light gray */
+  stroke: #d1d5db;
+  stroke-width: 1;
+  transition: fill 0.12s, stroke 0.12s, filter 0.12s;
+}
+
+/* hovered state — preview fill */
+.bk-stars__btn--hovered svg,
+.bk-stars__btn--lit svg {
+  fill: #fbbf24;        /* amber-400 */
+  stroke: #f59e0b;      /* amber-500 */
+  filter: drop-shadow(0 0 3px rgba(245, 158, 11, 0.35));
+}
+
+/* clicked/selected — brighter + bold glow */
+.bk-stars__btn--selected svg {
+  fill: #f59e0b;        /* amber-500 */
+  stroke: #d97706;      /* amber-600 */
+  filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.55));
+}
+
+/* Rating label below stars */
+.bk-stars__label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #9ca3af;       /* gray — "Select a rating" default */
+  transition: color 0.15s;
+  min-height: 18px;
+}
+
+.bk-stars__label--visible {
+  color: #d97706;       /* amber-600 when a rating is active */
+}
+
+/* ─── Review Modal width override ─────────────────────────── */
+.bk-modal--review {
+  max-width: 480px;
+}
+
+/* ─── Review summary pill ─────────────────────────────────── */
+.bk-review__summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 20px;
+  padding: 10px 14px;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #f3f4f6;
+}
+
+.bk-review__summary-id {
+  font-family: monospace;
+  font-size: 12px;
+}
+
+.bk-review__summary-dot {
+  opacity: 0.35;
+}
+
+/* ─── Char count ──────────────────────────────────────────── */
+.bk-review__char-count {
+  text-align: right;
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 4px;
+}
+
+.bk-review__char-count--warn {
+  color: #f59e0b;
+  font-weight: 500;
+}
+
+/* ─── Inline error inside review modal ───────────────────── */
+.bk-review__err {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #dc2626;
+}
+
+.bk-review__err svg {
+  flex-shrink: 0;
+  color: #dc2626;
+}
+
+/* ─── Write Review button ─────────────────────────────────── */
+.bk-btn--review {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #92400e;
+  border: 1px solid #fcd34d;
+  font-weight: 500;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+}
+
+.bk-btn--review:hover {
+  background: linear-gradient(135deg, #fde68a 0%, #fbbf24 100%);
+  border-color: #f59e0b;
+  transform: translateY(-1px);
+}
+
+.bk-btn--review:active {
+  transform: translateY(0);
+}
+
+/* ─── Reviewed Badge ──────────────────────────────────────── */
+.bk-reviewed-badge {
+  margin: 12px 0 4px;
+  padding: 0 2px;
+}
+
+.bk-reviewed-badge__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border: 1px solid #fde68a;
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+
+.bk-reviewed-badge__stars {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.bk-reviewed-badge__star {
+  width: 16px;
+  height: 16px;
+  fill: #e5e7eb;
+  stroke: #d1d5db;
+  stroke-width: 1;
+  flex-shrink: 0;
+}
+
+.bk-reviewed-badge__star--on {
+  fill: #fbbf24;
+  stroke: #f59e0b;
+}
+
+.bk-reviewed-badge__num {
+  margin-left: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #92400e;
+}
+
+.bk-reviewed-badge__text {
+  font-size: 12px;
+  font-weight: 500;
+  color: #78350f;
+}
+/* Global icon styling */
+.bk-card__meta-icon svg,
+.bk-detail__row-icon svg,
+.bk-sidebar__cat svg {
+  font-size: 16px;
+  color: #2563eb;
+}
+
+.bk-card__cat-tag svg {
+  margin-right: 6px;
+}
+
+.bk-status-badge svg {
+  margin-right: 4px;
+}
+
+.bk-btn svg {
+  margin-right: 6px;
+}

@@ -1,23 +1,24 @@
 import React from "react";
-
+import { FaShieldAlt, FaStar } from "react-icons/fa";
+import { MdPayment, MdLocationOn } from "react-icons/md";
 const TRUST = [
   {
-    icon: "🛡️",
+    icon: <FaShieldAlt />,
     title: "Verified Professionals",
     desc: "Every expert is background-checked and skill-tested before onboarding.",
   },
   {
-    icon: "💳",
+    icon: <MdPayment />,
     title: "Transparent Pricing",
     desc: "No hidden charges. What you see is exactly what you pay.",
   },
   {
-    icon: "⭐",
+    icon: <FaStar />,
     title: "Satisfaction Guaranteed",
     desc: "Not happy? We'll re-do the service at no extra cost.",
   },
   {
-    icon: "📍",
+    icon: <MdLocationOn />,
     title: "Service at Your Door",
     desc: "Our professionals come to you — no travel hassle.",
   },
