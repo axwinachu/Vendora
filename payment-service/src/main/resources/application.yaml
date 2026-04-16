@@ -14,8 +14,8 @@ spring:
     show-sql: true
 
 stripe:
-  secret:
-  public:
+  secret: ${STRIPE_SECRET_KEY}
+  public: ${STRIPE_PUBLIC_KEY}
 
 eureka:
   client:

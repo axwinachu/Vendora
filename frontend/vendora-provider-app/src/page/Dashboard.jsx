@@ -432,7 +432,7 @@ export default function Dashboard() {
         reject:   () => axios.patch(`/booking/${id}/reject`,   {}, { headers: { "X-User-Email": providerEmail } }),
         start:    () => axios.patch(`/booking/${id}/start`),
         complete: () => axios.patch(`/booking/${id}/complete`),
-        paid:     () => axios.patch(`/booking/${id}/paid`),
+        paid:     () => axios.put(`/booking/${id}/paid`),
         cancel:   () => axios.patch(`/booking/${id}/cancel`, { reason: "Cancelled by provider" }, { headers: { "X-User-Role": "PROVIDER" } }),
       };
       const res = await endpoints[action]();

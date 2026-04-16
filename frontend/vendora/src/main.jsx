@@ -7,11 +7,8 @@ keycloak.init({ onLoad: 'login-required' }).then((authenticated) => {
   if (authenticated) {
     localStorage.setItem('token', keycloak.token);
     ReactDOM.createRoot(document.getElementById('root')).render(
-      
         <App />
-      
     );
-
     setInterval(() => {
       keycloak.updateToken(60).then((refreshed) => {
         if (refreshed) {
