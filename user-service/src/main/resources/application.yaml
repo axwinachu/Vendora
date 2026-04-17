@@ -4,9 +4,9 @@ spring:
   application:
     name: user-service
   datasource:
-    url: jdbc:mysql://localhost:3306/vendora_db
-    username: root
-    password: 2465
+    url: jdbc:mysql://mysql:3306/vendora
+    username: vendora_user
+    password: vendora_pass
 
   jpa:
     hibernate:
@@ -36,6 +36,6 @@ cloudinary:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka
+      defaultZone: http://eureka-server:8761/eureka
   instance:
     prefer-ip-address: true
