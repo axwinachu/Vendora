@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: provider-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: provider-service
+  template:
+    metadata:
+      labels:
+        app: provider-service
+    spec:
+      containers:
+        - name: provider-service
+          image: provider-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8082
+          env:
+            - name: SPRING_APPLICATION_NAME
+              value: provider-service
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: http://eureka-server:8761/eureka
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:mysql://mysql:3306/vendora
+            - name: SPRING_DATASOURCE_USERNAME
+              value: vendora_user
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: vendora_pass
