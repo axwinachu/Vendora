@@ -39,6 +39,10 @@ public class BookingController {
     public BookingResponse reject(@PathVariable String id,@RequestHeader("X-User-Email") String providerEmail){
         return bookingFacade.rejected(id,providerEmail);
     }
+    @PostMapping("/{id}/verify-otp")
+    public BookingResponse verifyOtp(@PathVariable String id,@RequestParam String otp){
+        return bookingFacade.verifyOtp(id,otp);
+    }
     @PatchMapping("/{id}/complete")
     public BookingResponse complete(@PathVariable String id){
         return bookingFacade.complete(id);

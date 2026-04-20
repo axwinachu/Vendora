@@ -30,6 +30,16 @@ spring:
     serialization:
       write-dates-as-timestamps: false
 
+  task:
+    scheduling:
+      pool:
+        size: 2
+
+  redis:
+    host: localhost
+    port: 6379
+    database: 0
+
 eureka:
   client:
     service-url:

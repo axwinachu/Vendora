@@ -5,7 +5,7 @@ spring:
     name: provider-service
 
   datasource:
-    url: jdbc:mysql://localhost:3306/vendora
+    url: jdbc:mysql://localhost:3306/vendora_db
     username: root
     password: 2465
     driver-class-name: com.mysql.cj.jdbc.Driver

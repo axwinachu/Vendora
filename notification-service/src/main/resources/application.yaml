@@ -23,7 +23,5 @@ spring:
       mail.smtp.auth: true
       mail.smtp.starttls:enable: true
 
-notification:
-  from-email: @{MAIL_USERNAME}
-  from-name: "BookingApp"
+
 

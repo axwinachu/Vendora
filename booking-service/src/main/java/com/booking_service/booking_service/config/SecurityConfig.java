@@ -3,6 +3,7 @@ package com.booking_service.booking_service.config;
 import com.booking_service.booking_service.filter.HeadAuthFilter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.util.http.parser.HttpParser;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -34,7 +35,7 @@ public class SecurityConfig {
                         // Customer creates booking
                         .requestMatchers(HttpMethod.POST,  "/booking/create")
                         .hasRole("CUSTOMER")
-
+                        .requestMatchers(HttpMethod.POST,"/booking/*/verify-top").hasAnyRole("CUSTOMER,PROVIDER,ADMIN")
                         // Both can view their bookings
                         .requestMatchers(HttpMethod.GET,   "/booking/my")
                         .hasAnyRole("CUSTOMER", "PROVIDER")

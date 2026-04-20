@@ -10,6 +10,7 @@ import com.booking_service.booking_service.feign.UserServiceClient;
 import com.booking_service.booking_service.model.Booking;
 import com.booking_service.booking_service.service.BookingService;
 import com.booking_service.booking_service.service.KafkaProducerService;
+import com.booking_service.booking_service.service.OtpService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -24,6 +25,7 @@ public class BookingFacade {
     private final BookingService bookingService;
     private final UserServiceClient userServiceClient;
     private final ProviderServiceClient providerServiceClient;
+    private final OtpService otpService;
 
     //helper
     private BookingEvent toEvent(Booking booking,String eventType){
@@ -122,8 +124,20 @@ public class BookingFacade {
         return toResponse(bookingService.start(bookingId));
     }
     public BookingResponse complete(String bookingId){
-        Booking booking=bookingService.complete(bookingId);
-        kafkaProducerService.publishBookingCompleted(toEvent(booking,"booking.completed"));
+        Booking booking=bookingService.findById(bookingId);
+
+        if(!BookingStatus.IN_PROGRESS.equals(booking.getStatus())){
+            throw new RuntimeException("Booking must be in progress");
+        }
+        String otp= otpService.generateOtp(bookingId);
+
+        booking.setStatus(BookingStatus.WAITING_FOR_OTP);
+
+        Booking saved=bookingService.save(booking);
+        BookingEvent event=toEvent(saved,"booking.otp.generated");
+        event.setCancellationDetails(otp);
+
+        kafkaProducerService.publishBookingCompleted(event);
         return toResponse(booking);
     }
     public BookingResponse cancel(String bookingId,String cancelledBy,String reason){
@@ -133,5 +147,20 @@ public class BookingFacade {
     }
     public BookingResponse markPaid(String bookingId){
         return toResponse(bookingService.markPaid(bookingId));
+    }
+    public BookingResponse verifyOtp(String bookingId,String otp){
+        Booking booking=bookingService.findById(bookingId);
+
+        if(!BookingStatus.WAITING_FOR_OTP.equals(booking.getStatus())){
+            throw new RuntimeException("Booking not waiting for otp");
+        }
+        otpService.verifyOtp(bookingId,otp);
+
+        booking.setStatus(BookingStatus.COMPLETED);
+
+        Booking saved=bookingService.save(booking);
+
+        kafkaProducerService.publishBookingCompleted(toEvent(saved,"booking.completed"));
+        return toResponse(saved);
     }
 }
