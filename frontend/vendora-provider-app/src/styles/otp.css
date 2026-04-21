@@ -1,0 +1,547 @@
+/* ═══════════════════════════════════════════════════════════
+   otp.css  —  OTP Verification Modal
+   Production-grade, matches Vendora provider dashboard
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Animations ─────────────────────────────────────────── */
+@keyframes otp-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes otp-slide-up {
+  from { opacity: 0; transform: translateY(24px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+@keyframes otp-shake {
+  0%, 100% { transform: translateX(0);  }
+  15%       { transform: translateX(-8px); }
+  35%       { transform: translateX(8px);  }
+  55%       { transform: translateX(-5px); }
+  75%       { transform: translateX(5px);  }
+}
+@keyframes otp-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes otp-pop {
+  0%   { transform: scale(0.5); opacity: 0; }
+  65%  { transform: scale(1.12);             }
+  100% { transform: scale(1);   opacity: 1; }
+}
+@keyframes otp-pulse-ok {
+  0%   { box-shadow: 0 0 0 0   rgba(16,185,129,0.4); }
+  70%  { box-shadow: 0 0 0 12px rgba(16,185,129,0);   }
+  100% { box-shadow: 0 0 0 0   rgba(16,185,129,0);   }
+}
+@keyframes otp-msg-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+@keyframes otp-input-fill {
+  from { transform: scale(0.85); }
+  to   { transform: scale(1);    }
+}
+
+/* ── Backdrop ────────────────────────────────────────────── */
+.otp-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 24px;
+  transition: background 0.28s ease;
+}
+.otp-backdrop--in {
+  background: rgba(0, 0, 0, 0.48);
+}
+
+/* ── Card ────────────────────────────────────────────────── */
+.otp-card {
+  background: #ffffff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 424px;
+  padding: 32px 28px 28px;
+  box-shadow:
+    0 4px 6px rgba(0,0,0,0.04),
+    0 16px 40px rgba(0,0,0,0.14),
+    0 0 0 1px rgba(0,0,0,0.06);
+  position: relative;
+  opacity: 0;
+  transform: translateY(24px) scale(0.97);
+  transition: opacity 0.28s ease, transform 0.28s cubic-bezier(0.22,1,0.36,1);
+}
+.otp-card--in {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* ── Close button ────────────────────────────────────────── */
+.otp-x {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  background: #F9FAFB;
+  color: #9CA3AF;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.otp-x:hover {
+  background: #F3F4F6;
+  color: #374151;
+  border-color: #D1D5DB;
+}
+
+/* ── State screens (success / blocked) ───────────────────── */
+.otp-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 12px 0 8px;
+  gap: 0;
+}
+.otp-stamp {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+  animation: otp-pop 0.45s cubic-bezier(0.22,1,0.36,1) both;
+}
+.otp-stamp--ok {
+  background: #D1FAE5;
+  color: #059669;
+  animation: otp-pop 0.45s cubic-bezier(0.22,1,0.36,1) both,
+             otp-pulse-ok 1.6s ease 0.45s 2;
+}
+.otp-stamp--err {
+  background: #FEE2E2;
+  color: #DC2626;
+}
+.otp-screen__title {
+  font-size: 19px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 8px;
+  letter-spacing: -0.3px;
+}
+.otp-screen__body {
+  font-size: 13.5px;
+  color: #6B7280;
+  line-height: 1.65;
+  margin: 0 0 20px;
+}
+
+/* ── Highlight text ──────────────────────────────────────── */
+.otp-hl { font-weight: 600; }
+.otp-hl--green { color: #059669; }
+.otp-hl--amber { color: #D97706; }
+
+/* ── Chip / pill ─────────────────────────────────────────── */
+.otp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #F3F4F6;
+  border: 1px solid #E5E7EB;
+  border-radius: 20px;
+  padding: 5px 13px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #6B7280;
+  letter-spacing: 0.3px;
+  margin-bottom: 22px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+}
+.otp-chip--green {
+  background: #ECFDF5;
+  border-color: #A7F3D0;
+  color: #065F46;
+}
+.otp-chip--red {
+  background: #FEF2F2;
+  border-color: #FECACA;
+  color: #991B1B;
+}
+.otp-chip__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #D1D5DB;
+  flex-shrink: 0;
+}
+.otp-chip__dot--gray   { background: #9CA3AF; }
+.otp-chip__dot--red    { background: #EF4444; animation: otp-pulse-ok 1.8s ease infinite; }
+
+/* ── Main body ───────────────────────────────────────────── */
+.otp-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+/* ── Header row ──────────────────────────────────────────── */
+.otp-hdr {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  margin-bottom: 18px;
+}
+.otp-hdr__icon {
+  width: 48px;
+  height: 48px;
+  background: #ECFDF5;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #10B981;
+  flex-shrink: 0;
+}
+.otp-hdr__title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 3px;
+  letter-spacing: -0.2px;
+}
+.otp-hdr__sub {
+  font-size: 12.5px;
+  color: #9CA3AF;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Digit inputs ────────────────────────────────────────── */
+.otp-digits-wrap {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+.otp-digits {
+  display: flex;
+  gap: 8px;
+}
+.otp-digits--shake {
+  animation: otp-shake 0.42s ease;
+}
+.otp-digit {
+  width: 48px;
+  height: 58px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: 700;
+  font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+  color: #111827;
+  background: #F9FAFB;
+  border: 1.5px solid #E5E7EB;
+  border-radius: 12px;
+  outline: none;
+  caret-color: transparent;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s, transform 0.12s;
+}
+.otp-digit:focus {
+  border-color: #10B981;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(16,185,129,0.14);
+}
+.otp-digit--on {
+  border-color: #10B981;
+  background: #ffffff;
+  animation: otp-input-fill 0.12s ease;
+}
+.otp-digit--err {
+  border-color: #EF4444 !important;
+  background: #FFF5F5 !important;
+  box-shadow: 0 0 0 3px rgba(239,68,68,0.10) !important;
+}
+.otp-digit:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ── Timer ───────────────────────────────────────────────── */
+.otp-timer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #94A3B8;
+  margin-bottom: 16px;
+  transition: color 0.3s;
+}
+.otp-timer--urgent { color: #EF4444; }
+.otp-timer--dead   { color: #EF4444; }
+
+/* ── Attempts ────────────────────────────────────────────── */
+.otp-tries {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  width: 100%;
+  justify-content: center;
+}
+.otp-tries__label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #9CA3AF;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+.otp-tries__pips {
+  display: flex;
+  gap: 5px;
+}
+.otp-pip {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #E5E7EB;
+  border: 1.5px solid #D1D5DB;
+  transition: background 0.25s, border-color 0.25s, transform 0.2s;
+}
+.otp-pip--used {
+  background: #EF4444;
+  border-color: #EF4444;
+  transform: scale(1.15);
+}
+.otp-tries__num {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #9CA3AF;
+  font-family: 'SF Mono', monospace;
+}
+
+/* ── Message ─────────────────────────────────────────────── */
+.otp-msg {
+  font-size: 12.5px;
+  font-weight: 500;
+  text-align: center;
+  margin: 0 0 12px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  width: 100%;
+  animation: otp-msg-in 0.22s ease;
+}
+.otp-msg--err {
+  background: #FEF2F2;
+  color: #DC2626;
+  border: 1px solid #FECACA;
+}
+.otp-msg--ok {
+  background: #ECFDF5;
+  color: #059669;
+  border: 1px solid #A7F3D0;
+}
+
+/* ── Buttons ─────────────────────────────────────────────── */
+.otp-btn {
+  width: 100%;
+  padding: 13px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.15s, transform 0.1s, opacity 0.15s, box-shadow 0.15s;
+  margin-bottom: 14px;
+  letter-spacing: 0.1px;
+}
+.otp-btn--primary {
+  background: #111827;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(17,24,39,0.18);
+}
+.otp-btn--primary:not(.otp-btn--off):hover {
+  background: #1F2937;
+  box-shadow: 0 4px 14px rgba(17,24,39,0.28);
+  transform: translateY(-1px);
+}
+.otp-btn--primary:not(.otp-btn--off):active {
+  transform: scale(0.98);
+}
+.otp-btn--off {
+  background: #F3F4F6;
+  color: #9CA3AF;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ── Spinner icon ────────────────────────────────────────── */
+.otp-spin-icon {
+  animation: otp-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+/* ── Divider ─────────────────────────────────────────────── */
+.otp-divider {
+  width: 100%;
+  height: 1px;
+  background: #F3F4F6;
+  border: none;
+  margin: 2px 0 14px;
+}
+
+/* ── Resend row ──────────────────────────────────────────── */
+.otp-resend {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding-top: 2px;
+  border-top: 1px solid #F3F4F6;
+}
+.otp-resend__q {
+  font-size: 12px;
+  color: #9CA3AF;
+}
+.otp-resend__btn {
+  background: none;
+  border: none;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  padding: 4px 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: color 0.15s;
+}
+.otp-resend__btn:hover:not(:disabled) { color: #111827; }
+.otp-resend__btn:disabled {
+  color: #9CA3AF;
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .otp-card { padding: 28px 18px 22px; border-radius: 16px; }
+  .otp-digit { width: 42px; height: 52px; font-size: 21px; border-radius: 10px; }
+  .otp-digits { gap: 6px; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Dashboard additions — OTP button + banner + tab alert dot
+   Append these to your existing dashboard.css
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Enter OTP action button ─────────────────────────────── */
+.db-action-btn--otp {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-body, sans-serif);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: var(--radius-md, 10px);
+  border: none;
+  cursor: pointer;
+  min-width: 140px;
+  height: 40px;
+  letter-spacing: 0.1px;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #F97316, #EA580C);
+  color: #ffffff;
+  box-shadow: 0 3px 10px rgba(249,115,22,0.35);
+  transition: background 0.15s, transform 0.12s, box-shadow 0.15s, opacity 0.15s;
+}
+.db-action-btn--otp:not(:disabled):hover {
+  background: linear-gradient(135deg, #EA580C, #C2410C);
+  box-shadow: 0 4px 16px rgba(249,115,22,0.45);
+  transform: translateY(-1px);
+}
+.db-action-btn--otp:not(:disabled):active { transform: scale(0.96); }
+.db-action-btn--otp:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* Pulsing dot on OTP button */
+.db-otp-pulse {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #FFF;
+  opacity: 0.85;
+  animation: db-otp-ring 1.8s ease infinite;
+}
+@keyframes db-otp-ring {
+  0%   { box-shadow: 0 0 0 0   rgba(255,255,255,0.7); }
+  70%  { box-shadow: 0 0 0 6px rgba(255,255,255,0);   }
+  100% { box-shadow: 0 0 0 0   rgba(255,255,255,0);   }
+}
+
+/* ── WAITING_FOR_OTP info banner inside expanded row ──────── */
+.db-otp-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #FFF7ED;
+  border: 1px solid #FED7AA;
+  border-radius: 10px;
+  padding: 13px 16px;
+  margin-bottom: 18px;
+}
+.db-otp-banner__icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #FEF3C7;
+  color: #D97706;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.db-otp-banner__title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #92400E;
+  margin: 0 0 3px;
+}
+.db-otp-banner__sub {
+  font-size: 12px;
+  color: #B45309;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Tab alert dot (orange) for WAITING_FOR_OTP tab ─────── */
+.db-tab__alert {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #F97316;
+  margin-left: 2px;
+  margin-right: -2px;
+  animation: db-otp-ring 1.8s ease infinite;
+  vertical-align: middle;
+}

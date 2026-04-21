@@ -9,18 +9,6 @@
         <outputRelativeToContentRoot value="true" />
         <module name="discovery-service" />
       </profile>
-      <profile name="Annotation profile for chat-service" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.44/lombok-1.18.44.jar" />
-        </processorPath>
-        <module name="chat-service" />
-        <module name="payment-service" />
-        <module name="review-service" />
-        <module name="notification-service" />
-      </profile>
       <profile name="Annotation profile for booking-service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
@@ -29,10 +17,22 @@
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
         </processorPath>
         <module name="api-gateway" />
-        <module name="auth-service" />
         <module name="user-service" />
         <module name="provider-service" />
         <module name="booking-service" />
+      </profile>
+      <profile name="Annotation profile for demo" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.44/lombok-1.18.44.jar" />
+        </processorPath>
+        <module name="auth-service" />
+        <module name="chat-service" />
+        <module name="payment-service" />
+        <module name="review-service" />
+        <module name="notification-service" />
       </profile>
     </annotationProcessing>
   </component>

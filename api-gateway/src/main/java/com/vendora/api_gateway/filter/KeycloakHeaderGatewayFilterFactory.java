@@ -13,12 +13,16 @@ import java.util.Map;
 
 @Slf4j
 @Component
-public class KeycloakHeaderGatewayFilterFactory extends AbstractGatewayFilterFactory<KeycloakHeaderGatewayFilterFactory.Config> {
-    public KeycloakHeaderGatewayFilterFactory(){
+public class KeycloakHeaderGatewayFilterFactory
+        extends AbstractGatewayFilterFactory<KeycloakHeaderGatewayFilterFactory.Config> {
+
+    public KeycloakHeaderGatewayFilterFactory() {
         super(Config.class);
     }
+
     @Override
     public GatewayFilter apply(Config config) {
+
         return (exchange, chain) ->
                 ReactiveSecurityContextHolder.getContext()
                         .map(ctx -> ctx.getAuthentication())
@@ -27,47 +31,60 @@ public class KeycloakHeaderGatewayFilterFactory extends AbstractGatewayFilterFac
                         .flatMap(auth -> {
 
                             Jwt jwt = auth.getToken();
-
                             String email = jwt.getClaimAsString("email");
                             String userId = jwt.getSubject();
-
-                            String role = "CUSTOMER"; // default
-
-
-                            var resourceAccess = jwt.getClaimAsMap("resource_access");
-                             log.info("relame roel {}",resourceAccess);
-                            if (resourceAccess != null) {
-                                var client = (Map<?, ?>) resourceAccess.get("vendora-app");
-
-                                if (client != null) {
-                                    var roles = (List<?>) client.get("roles");
-
-                                    if (roles != null && !roles.isEmpty()) {
-                                        role = roles.get(0).toString();
-                                    }
-                                }
-                            }
-
-                            final String finalRole = role;
+                            String extractedRole = extractRole(jwt);
+                            final String role = (extractedRole == null || extractedRole.isBlank())
+                                    ? "UNKNOWN"
+                                    : extractedRole;
                             final String finalEmail = email != null ? email : "";
                             final String finalUserId = userId != null ? userId : "";
-
+                            log.info("JWT subject: {}", finalUserId);
+                            log.info("JWT email: {}", finalEmail);
+                            log.info("JWT role: {}", role);
                             var mutated = exchange.mutate()
                                     .request(r -> r
                                             .header("X-User-Email", finalEmail)
-                                            .header("X-User-Role", finalRole)
+                                            .header("X-User-Role", role)
                                             .header("X-User-Id", finalUserId)
                                     ).build();
-
-                            log.info("Keycloak auth-email: {}, role: {} userId {}", finalEmail, finalRole,finalUserId);
 
                             return chain.filter(mutated);
                         })
                         .switchIfEmpty(chain.filter(exchange));
     }
 
+    private String extractRole(Jwt jwt) {
 
-    public static class Config{
+        Map<String, Object> resourceAccess = jwt.getClaimAsMap("resource_access");
 
+        if (resourceAccess == null) {
+            log.warn("No resource_access in JWT");
+            return null;
+        }
+
+        log.info("resource_access: {}", resourceAccess);
+        String[] priority = {"ADMIN", "PROVIDER", "CUSTOMER"};
+
+        for (String p : priority) {
+            for (Map.Entry<String, Object> entry : resourceAccess.entrySet()) {
+
+                String clientName = entry.getKey();
+                Map<?, ?> clientData = (Map<?, ?>) entry.getValue();
+                Object rolesObj = clientData.get("roles");
+                if (rolesObj instanceof List<?>) {
+                    List<?> roles = (List<?>) rolesObj;
+                    if (roles.contains(p)) {
+                        log.info("Selected role '{}' from client '{}'", p, clientName);
+                        return p;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public static class Config {
     }
 }

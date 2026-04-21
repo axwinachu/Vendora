@@ -10,18 +10,22 @@ keycloak.init({
   
   if (authenticated) {
     console.log("User authenticated");
+    const roles = keycloak.tokenParsed?.resource_access?.["vendora-admin-app"]?.roles || [];
 
-    // Store token
+    console.log("User roles:", roles);
+    if (!roles.includes("ADMIN")) {
+      document.body.innerHTML = "<h2>Access Denied</h2>";
+      return;
+    }
+
     localStorage.setItem('token', keycloak.token);
 
-    // Render app
     createRoot(document.getElementById('root')).render(
       <StrictMode>
         <App />
       </StrictMode>
     );
 
-    // Refresh token automatically
     setInterval(() => {
       keycloak.updateToken(60).then((refreshed) => {
         if (refreshed) {
