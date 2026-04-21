@@ -4,21 +4,8 @@ spring:
   jackson:
     serialization:
       write-dates-as-timestamps: false
-  datasource:
-    url: jdbc:mysql://localhost:3306/vendora_db
-    username: root
-    password: 2465
 
-  jpa:
-    hibernate:
-      ddl-auto: update
-
-  redis:
-    host: localhost
-    port: 6379
-    database: 0
-
-  mail:
+    mail:
     host: smtp.gmail.com
     port: 587
     username: aswindev2465@gmail.com
@@ -26,8 +13,10 @@ spring:
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
+
 server:
-  port: 8080
+  port: 8090
+
 eureka:
   client:
     service-url:
@@ -38,3 +27,9 @@ eureka:
     ip-address: 127.0.0.1
     hostname: 127.0.0.1
     instance-id: ${spring.application.name}:${server.port}
+
+keycloak:
+  server-url: http://localhost:8080
+  realm: vendora
+  client-id: vendora-admin-service
+  client-secret: eTIk2mbE050tKBx2uEFUaLl5umyKfizV

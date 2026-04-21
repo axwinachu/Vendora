@@ -43,7 +43,9 @@ spring:
             - id: auth-service
               uri: lb://auth-service
               predicates:
-                - Path=/auth/**
+                - Path=/auth/admin/**
+              filters:
+                - name: KeycloakHeader
 
             - id: user-service
               uri: lb://user-service
