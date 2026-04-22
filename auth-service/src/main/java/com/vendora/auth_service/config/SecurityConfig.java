@@ -26,7 +26,7 @@ public class SecurityConfig {
                 .formLogin(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET, "/actuator/**").permitAll()
-                        .anyRequest().hasRole("ADMIN")
+                        .anyRequest().hasAnyRole("ADMIN")
                 )
                 .addFilterBefore(headerAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

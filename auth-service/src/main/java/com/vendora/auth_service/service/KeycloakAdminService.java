@@ -19,6 +19,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,9 +30,15 @@ public class KeycloakAdminService {
     private final WebClient webClient;
     private final KeycloakProperties props;
 
-    // ─── Token cache ─────────────────────────────────────────────────────────
+    // Allowlist of valid realm roles — single source of truth in the service layer
+    private static final Set<String> VALID_REALM_ROLES = Set.of("ADMIN", "PROVIDER", "USER");
+
     private String cachedToken;
     private Instant tokenExpiry = Instant.MIN;
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Token management
+    // ─────────────────────────────────────────────────────────────────────────
 
     public synchronized String getAdminToken() {
         if (cachedToken != null && Instant.now().isBefore(tokenExpiry)) {
@@ -59,100 +66,127 @@ public class KeycloakAdminService {
         Object raw = response.get("expires_in");
         int expiresIn = raw != null ? ((Number) raw).intValue() : 60;
         tokenExpiry = Instant.now().plusSeconds(expiresIn - 30);
+        log.debug("Admin token refreshed, expires in {}s", expiresIn);
         return cachedToken;
     }
 
-    // ─── Get Client UUID ──────────────────────────────────────────────────────
-    public String getClientUUID(String token, String clientName) {
-        List<?> clients = webClient.get()
-                .uri(props.getServerUrl() + "/admin/realms/" + props.getRealm()
-                        + "/clients?clientId=" + clientName)
-                .header("Authorization", "Bearer " + token)
-                .retrieve()
-                .bodyToMono(List.class)
-                .blockOptional()
-                .orElseThrow(() -> new RuntimeException("Client not found: " + clientName));
+    // ─────────────────────────────────────────────────────────────────────────
+    // Realm role operations  (NO client UUID needed — realm roles are global)
+    // ─────────────────────────────────────────────────────────────────────────
 
-        if (clients.isEmpty())
-            throw new RuntimeException("Client not found: " + clientName);
-
-        return ((Map<?, ?>) clients.get(0)).get("id").toString();
-    }
-
-    // ─── Assign role ──────────────────────────────────────────────────────────
     public void assignRole(RoleRequest req) {
-        String token      = getAdminToken();
-        String clientUUID = getClientUUID(token, req.getClient());
-        Map<?, ?> role    = fetchRole(token, clientUUID, req.getRole());
+        validateRole(req.getRole());
+
+        String token = getAdminToken();
+        Map<?, ?> role = fetchRealmRole(token, req.getRole());
 
         webClient.post()
-                .uri(props.getServerUrl() + "/admin/realms/" + props.getRealm()
-                        + "/users/" + req.getUserId() + "/role-mappings/clients/" + clientUUID)
+                .uri(realmRoleMappingUri(req.getUserId()))
                 .header("Authorization", "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(List.of(role))
                 .retrieve()
+                .onStatus(s -> s == HttpStatus.NOT_FOUND, r ->
+                        Mono.error(new RuntimeException("User not found: " + req.getUserId())))
+                .onStatus(s -> s.isError(), r -> r.bodyToMono(String.class)
+                        .flatMap(body -> Mono.error(new RuntimeException(
+                                "Assign role failed: " + r.statusCode() + " — " + body))))
                 .toBodilessEntity()
                 .block();
+
+        log.info("Realm role '{}' assigned to user '{}'", req.getRole(), req.getUserId());
     }
 
-    // ─── Remove role ──────────────────────────────────────────────────────────
     public void removeRole(RoleRequest req) {
-        String token      = getAdminToken();
-        String clientUUID = getClientUUID(token, req.getClient());
-        Map<?, ?> role    = fetchRole(token, clientUUID, req.getRole());
+        validateRole(req.getRole());
+
+        String token = getAdminToken();
+        Map<?, ?> role = fetchRealmRole(token, req.getRole());
 
         webClient.method(HttpMethod.DELETE)
-                .uri(props.getServerUrl() + "/admin/realms/" + props.getRealm()
-                        + "/users/" + req.getUserId() + "/role-mappings/clients/" + clientUUID)
+                .uri(realmRoleMappingUri(req.getUserId()))
                 .header("Authorization", "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(List.of(role))
                 .retrieve()
+                .onStatus(s -> s == HttpStatus.NOT_FOUND, r ->
+                        Mono.error(new RuntimeException(
+                                "User '" + req.getUserId() + "' not found or does not have role '" + req.getRole() + "'")))
+                .onStatus(s -> s.isError(), r -> r.bodyToMono(String.class)
+                        .flatMap(body -> Mono.error(new RuntimeException(
+                                "Remove role failed: " + r.statusCode() + " — " + body))))
                 .toBodilessEntity()
                 .block();
+
+        log.info("Realm role '{}' removed from user '{}'", req.getRole(), req.getUserId());
     }
 
-    // ─── Change role (remove old → assign new) ────────────────────────────────
     public void changeRole(ChangeRoleRequest req) {
+        validateRole(req.getFromRole());
+        validateRole(req.getToRole());
+
+        if (req.getFromRole().equals(req.getToRole())) {
+            throw new IllegalArgumentException("fromRole and toRole must be different");
+        }
+
         String token = getAdminToken();
+        Map<?, ?> oldRole = fetchRealmRole(token, req.getFromRole());
+        Map<?, ?> newRole = fetchRealmRole(token, req.getToRole());
+        String uri = realmRoleMappingUri(req.getUserId());
 
-        // Resolve both client UUIDs up front — fail fast before mutating anything
-        String fromClientUUID = getClientUUID(token, req.getFromClient());
-        String toClientUUID   = getClientUUID(token, req.getToClient());
-
-        Map<?, ?> oldRole = fetchRole(token, fromClientUUID, req.getFromRole());
-        Map<?, ?> newRole = fetchRole(token, toClientUUID,   req.getToRole());
-
-        String baseUrl = props.getServerUrl() + "/admin/realms/" + props.getRealm()
-                + "/users/" + req.getUserId() + "/role-mappings/clients/";
-
-        // Step 1: Remove old role
+        // Delete old role first
         webClient.method(HttpMethod.DELETE)
-                .uri(baseUrl + fromClientUUID)
+                .uri(uri)
                 .header("Authorization", "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(List.of(oldRole))
                 .retrieve()
                 .onStatus(HttpStatus.NOT_FOUND::equals, r ->
                         Mono.error(new RuntimeException(
-                                "User '" + req.getUserId() + "' does not have role '"
-                                        + req.getFromRole() + "' on client '" + req.getFromClient() + "'")))
+                                "User '" + req.getUserId() + "' does not have role '" + req.getFromRole() + "'")))
+                .onStatus(s -> s.isError(), r -> r.bodyToMono(String.class)
+                        .flatMap(body -> Mono.error(new RuntimeException(
+                                "Remove old role failed: " + r.statusCode() + " — " + body))))
                 .toBodilessEntity()
                 .block();
 
-        // Step 2: Assign new role
+        // Assign new role
         webClient.post()
-                .uri(baseUrl + toClientUUID)
+                .uri(uri)
                 .header("Authorization", "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(List.of(newRole))
                 .retrieve()
+                .onStatus(s -> s.isError(), r -> r.bodyToMono(String.class)
+                        .flatMap(body -> Mono.error(new RuntimeException(
+                                "Assign new role failed: " + r.statusCode() + " — " + body))))
                 .toBodilessEntity()
                 .block();
+
+        log.info("Realm role changed '{}' → '{}' for user '{}'",
+                req.getFromRole(), req.getToRole(), req.getUserId());
     }
 
-    // ─── List users ───────────────────────────────────────────────────────────
+    public List<Map<?, ?>> getUserRoles(String userId) {
+        String token = getAdminToken();
+
+        List<?> roles = webClient.get()
+                .uri(realmRoleMappingUri(userId))
+                .header("Authorization", "Bearer " + token)
+                .retrieve()
+                .onStatus(s -> s == HttpStatus.NOT_FOUND, r ->
+                        Mono.error(new RuntimeException("User not found: " + userId)))
+                .bodyToMono(List.class)
+                .block();
+
+        return roles == null ? List.of()
+                : roles.stream().map(r -> (Map<?, ?>) r).collect(Collectors.toList());
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // User CRUD
+    // ─────────────────────────────────────────────────────────────────────────
+
     public List<UserResponse> listUsers(int first, int max) {
         String token = getAdminToken();
         List<?> raw = webClient.get()
@@ -165,7 +199,6 @@ public class KeycloakAdminService {
         return mapUsers(raw);
     }
 
-    // ─── Search / filter users ────────────────────────────────────────────────
     public List<UserResponse> searchUsers(SearchRequest req) {
         String token = getAdminToken();
 
@@ -187,24 +220,6 @@ public class KeycloakAdminService {
         return mapUsers(raw);
     }
 
-    // ─── Get user roles ───────────────────────────────────────────────────────
-    public List<Map<?, ?>> getUserRoles(String userId, String clientName) {
-        String token      = getAdminToken();
-        String clientUUID = getClientUUID(token, clientName);
-
-        List<?> roles = webClient.get()
-                .uri(props.getServerUrl() + "/admin/realms/" + props.getRealm()
-                        + "/users/" + userId + "/role-mappings/clients/" + clientUUID)
-                .header("Authorization", "Bearer " + token)
-                .retrieve()
-                .bodyToMono(List.class)
-                .block();
-
-        return roles == null ? List.of()
-                : roles.stream().map(r -> (Map<?, ?>) r).collect(Collectors.toList());
-    }
-
-    // ─── Create user ──────────────────────────────────────────────────────────
     public String createUser(UserRequest req) {
         String token = getAdminToken();
 
@@ -215,7 +230,7 @@ public class KeycloakAdminService {
         if (req.getLastName()  != null) body.put("lastName",  req.getLastName());
         body.put("enabled", req.isEnabled());
 
-        log.debug("Creating Keycloak user with body: {}", body);
+        log.debug("Creating Keycloak user: {}", body);
 
         return webClient.post()
                 .uri(props.getServerUrl() + "/admin/realms/" + props.getRealm() + "/users")
@@ -223,7 +238,6 @@ public class KeycloakAdminService {
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(body)
                 .exchangeToMono(response ->
-                        // Read body FIRST before doing anything else — stream can only be read once
                         response.bodyToMono(String.class)
                                 .defaultIfEmpty("")
                                 .flatMap(responseBody -> {
@@ -237,12 +251,10 @@ public class KeycloakAdminService {
                                             return Mono.error(new RuntimeException(
                                                     "User created but no Location header returned"));
                                         }
-                                        // Extract userId from: .../users/{userId}
                                         return Mono.just(
                                                 location.substring(location.lastIndexOf('/') + 1));
                                     }
 
-                                    // Non-201 → surface the exact Keycloak error
                                     return Mono.error(new RuntimeException(
                                             "User creation failed — status: "
                                                     + response.statusCode()
@@ -252,7 +264,6 @@ public class KeycloakAdminService {
                 .block();
     }
 
-    // ─── Delete user ──────────────────────────────────────────────────────────
     public void deleteUser(String userId) {
         String token = getAdminToken();
         webClient.delete()
@@ -266,17 +277,54 @@ public class KeycloakAdminService {
                 .block();
     }
 
-    // ─── Helpers ──────────────────────────────────────────────────────────────
-    private Map<?, ?> fetchRole(String token, String clientUUID, String roleName) {
+    // ─────────────────────────────────────────────────────────────────────────
+    // Private helpers
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Builds the realm-level role-mapping URI for a user.
+     * Realm roles live at: /admin/realms/{realm}/users/{userId}/role-mappings/realm
+     * NOT at /role-mappings/clients/{clientUUID} — that's for client roles.
+     */
+    private String realmRoleMappingUri(String userId) {
+        return props.getServerUrl()
+                + "/admin/realms/" + props.getRealm()
+                + "/users/" + userId
+                + "/role-mappings/realm";           // <── this is the key fix
+    }
+
+    /**
+     * Fetches a realm role object by name.
+     * Realm roles live at: /admin/realms/{realm}/roles/{roleName}
+     * NOT at /clients/{clientUUID}/roles/{roleName}.
+     */
+    private Map<?, ?> fetchRealmRole(String token, String roleName) {
         return webClient.get()
-                .uri(props.getServerUrl() + "/admin/realms/" + props.getRealm()
-                        + "/clients/" + clientUUID + "/roles/" + roleName)
+                .uri(props.getServerUrl()
+                        + "/admin/realms/" + props.getRealm()
+                        + "/roles/" + roleName)     // <── realm roles endpoint
                 .header("Authorization", "Bearer " + token)
                 .retrieve()
                 .onStatus(s -> s == HttpStatus.NOT_FOUND, r ->
-                        Mono.error(new RuntimeException("Role not found: " + roleName)))
+                        Mono.error(new RuntimeException(
+                                "Realm role not found: '" + roleName
+                                        + "'. Ensure the role exists in the '" + props.getRealm() + "' realm.")))
+                .onStatus(s -> s.isError(), r -> r.bodyToMono(String.class)
+                        .flatMap(body -> Mono.error(new RuntimeException(
+                                "Fetch realm role failed: " + r.statusCode() + " — " + body))))
                 .bodyToMono(Map.class)
                 .block();
+    }
+
+    /**
+     * Validates a role name against the allowlist before hitting Keycloak.
+     * This prevents any garbage value from ever reaching the Keycloak API.
+     */
+    private void validateRole(String role) {
+        if (!VALID_REALM_ROLES.contains(role)) {
+            throw new IllegalArgumentException(
+                    "Invalid role: '" + role + "'. Must be one of: " + VALID_REALM_ROLES);
+        }
     }
 
     private List<UserResponse> mapUsers(List<?> raw) {

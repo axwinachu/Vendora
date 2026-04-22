@@ -18,12 +18,12 @@ public class AdminFacade {
 
     private final KeycloakAdminService keycloakService;
 
-    public void assignRole(RoleRequest req)                 { keycloakService.assignRole(req); }
-    public void removeRole(RoleRequest req)                 { keycloakService.removeRole(req); }
-    public void changeRole(ChangeRoleRequest req)           { keycloakService.changeRole(req); }
-    public List<UserResponse> listUsers(int first, int max) { return keycloakService.listUsers(first, max); }
-    public List<UserResponse> searchUsers(SearchRequest req){ return keycloakService.searchUsers(req); }
-    public List<Map<?,?>> getUserRoles(String uid, String client){ return keycloakService.getUserRoles(uid, client); }
-    public String createUser(UserRequest req)               { return keycloakService.createUser(req); }
-    public void deleteUser(String userId)                   { keycloakService.deleteUser(userId); }
+    public void assignRole(RoleRequest req)                  { keycloakService.assignRole(req); }
+    public void removeRole(RoleRequest req)                  { keycloakService.removeRole(req); }
+    public void changeRole(ChangeRoleRequest req)            { keycloakService.changeRole(req); }
+    public List<UserResponse> listUsers(int first, int max)  { return keycloakService.listUsers(first, max); }
+    public List<UserResponse> searchUsers(SearchRequest req) { return keycloakService.searchUsers(req); }
+    public List<Map<?,?>> getUserRoles(String userId)        { return keycloakService.getUserRoles(userId); }
+    public String createUser(UserRequest req)                { return keycloakService.createUser(req); }
+    public void deleteUser(String userId)                    { keycloakService.deleteUser(userId); }
 }

@@ -24,23 +24,28 @@ public class AdminController {
 
     private final AdminFacade adminFacade;
 
+    // ── Role management ──────────────────────────────────────────────────────
+
     @PostMapping("/assign-role")
     public ResponseEntity<String> assignRole(@Valid @RequestBody RoleRequest req) {
         adminFacade.assignRole(req);
-        return ResponseEntity.ok("Role assigned successfully");
+        return ResponseEntity.ok("Role '" + req.getRole() + "' assigned to user '" + req.getUserId() + "'");
     }
 
     @DeleteMapping("/remove-role")
     public ResponseEntity<String> removeRole(@Valid @RequestBody RoleRequest req) {
         adminFacade.removeRole(req);
-        return ResponseEntity.ok("Role removed successfully");
+        return ResponseEntity.ok("Role '" + req.getRole() + "' removed from user '" + req.getUserId() + "'");
     }
 
     @PatchMapping("/change-role")
     public ResponseEntity<String> changeRole(@Valid @RequestBody ChangeRoleRequest req) {
         adminFacade.changeRole(req);
-        return ResponseEntity.ok("Role changed successfully");
+        return ResponseEntity.ok(
+                "Role changed from '" + req.getFromRole() + "' to '" + req.getToRole() + "' for user '" + req.getUserId() + "'");
     }
+
+    // ── User queries ─────────────────────────────────────────────────────────
 
     @GetMapping("/users")
     public ResponseEntity<List<UserResponse>> listUsers(
@@ -50,17 +55,20 @@ public class AdminController {
     }
 
     @GetMapping("/users/search")
-    public ResponseEntity<List<UserResponse>> searchUsers(
-            @Valid SearchRequest req) {   // query params auto-bound
+    public ResponseEntity<List<UserResponse>> searchUsers(@Valid SearchRequest req) {
         return ResponseEntity.ok(adminFacade.searchUsers(req));
     }
 
+    /**
+     * Returns the realm roles assigned to a user.
+     * The 'client' query param has been removed — we use realm roles only.
+     */
     @GetMapping("/users/{userId}/roles")
-    public ResponseEntity<List<Map<?,?>>> getUserRoles(
-            @PathVariable String userId,
-            @RequestParam String client) {
-        return ResponseEntity.ok(adminFacade.getUserRoles(userId, client));
+    public ResponseEntity<List<Map<?, ?>>> getUserRoles(@PathVariable String userId) {
+        return ResponseEntity.ok(adminFacade.getUserRoles(userId));
     }
+
+    // ── User CRUD ─────────────────────────────────────────────────────────────
 
     @PostMapping("/users")
     public ResponseEntity<String> createUser(@Valid @RequestBody UserRequest req) {
