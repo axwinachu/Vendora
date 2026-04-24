@@ -32,13 +32,13 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
 
-                        // Customer creates booking
+                        // USER creates booking
                         .requestMatchers(HttpMethod.POST,  "/booking/create")
-                        .hasRole("CUSTOMER")
-                        .requestMatchers(HttpMethod.POST,"/booking/*/verify-top").hasAnyRole("CUSTOMER,PROVIDER,ADMIN")
+                        .hasRole("USER")
+                        .requestMatchers(HttpMethod.POST,"/booking/*/verify-top").hasAnyRole("USER,PROVIDER,ADMIN")
                         // Both can view their bookings
                         .requestMatchers(HttpMethod.GET,   "/booking/my")
-                        .hasAnyRole("CUSTOMER", "PROVIDER")
+                        .hasAnyRole("USER", "PROVIDER")
 
                         // Admin views all
                         .requestMatchers(HttpMethod.GET,   "/booking/all")
@@ -46,7 +46,7 @@ public class SecurityConfig {
 
                         // Any role can view a single booking
                         .requestMatchers(HttpMethod.GET,   "/booking/*")
-                        .hasAnyRole("CUSTOMER", "PROVIDER", "ADMIN")
+                        .hasAnyRole("USER", "PROVIDER", "ADMIN")
 
                         // Provider actions
                         .requestMatchers(HttpMethod.PATCH, "/booking/*/confirm")
@@ -58,13 +58,13 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PATCH, "/booking/*/complete")
                         .hasRole("PROVIDER")
 
-                        // Customer or provider can cancel
+                        // USER or provider can cancel
                         .requestMatchers(HttpMethod.PATCH, "/booking/*/cancel")
-                        .hasAnyRole("CUSTOMER", "PROVIDER")
+                        .hasAnyRole("USER", "PROVIDER")
 
                         // FIXED: was ADMIN only — payment-service or provider marks paid
                         .requestMatchers(HttpMethod.PUT, "/booking/*/paid")
-                        .hasAnyRole("PROVIDER","ADMIN","CUSTOMER")
+                        .hasAnyRole("PROVIDER","ADMIN","USER")
 
                         .anyRequest().authenticated()
                 )

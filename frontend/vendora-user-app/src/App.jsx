@@ -18,7 +18,7 @@ function App() {
           <Route path='/provider/:id' element={<ProviderDetailPage/>}/>
           <Route path='/booking' element={<Booking/>}/>
           <Route path='/chat' element={<ChatPage/>}/>
-          <Route path="/chat/:providerId" element={<ChatPage />} />
+          <Route path="/chat/:userId" element={<ChatPage />} />
         </Routes>
       </div>
     </Router>

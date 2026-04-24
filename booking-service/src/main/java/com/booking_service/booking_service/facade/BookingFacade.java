@@ -131,11 +131,12 @@ public class BookingFacade {
         }
         String otp= otpService.generateOtp(bookingId);
 
+
         booking.setStatus(BookingStatus.WAITING_FOR_OTP);
 
         Booking saved=bookingService.save(booking);
         BookingEvent event=toEvent(saved,"booking.otp.generated");
-        event.setCancellationDetails(otp);
+        event.setOtp(otp);
 
         kafkaProducerService.publishBookingCompleted(event);
         return toResponse(booking);

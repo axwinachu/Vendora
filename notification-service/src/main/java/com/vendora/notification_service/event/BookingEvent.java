@@ -29,5 +29,6 @@ public class BookingEvent {
     private LocalTime scheduledTime;
     private String address;
     private String cancellationReason;
+    private String otp;
 
 }

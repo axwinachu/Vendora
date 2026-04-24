@@ -35,4 +35,28 @@ public class EmailService {
         }
     }
 
+    public void sendOtp(String to,String otp){
+        try{
+            String subject= "Booking Completion OTP";
+
+            String body = """
+            Hello,
+
+            Your OTP for booking completion is: %s
+
+            This OTP is valid for 5 minutes.
+            Do not share it with anyone.
+
+            Thank you,
+            Vendora Team
+            """.formatted(otp);
+
+
+            send(to,subject,body);
+
+        }catch (Exception ex){
+            log.info("failed to send otp email -> {} ",ex.getMessage());
+        }
+    }
+
 }

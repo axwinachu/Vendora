@@ -46,6 +46,7 @@ spring:
                 - Path=/auth/admin/**
               filters:
                 - name: KeycloakHeader
+                - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_FIRST
 
             - id: user-service
               uri: lb://user-service
@@ -53,6 +54,7 @@ spring:
                 - Path=/user/**
               filters:
                 - name: KeycloakHeader
+                - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_FIRST
 
             - id: provider-service
               uri: lb://provider-service
@@ -60,6 +62,7 @@ spring:
                 - Path=/provider/**
               filters:
                 - name: KeycloakHeader
+                - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_FIRST
 
             - id: booking-service
               uri: lb://booking-service
@@ -67,6 +70,7 @@ spring:
                 - Path=/booking/**
               filters:
                 - name: KeycloakHeader
+                - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_FIRST
 
             - id: payment-service
               uri: lb://payment-service
@@ -74,6 +78,7 @@ spring:
                 - Path=/payments/**
               filters:
                 - name: KeycloakHeader
+                - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_FIRST
 
             - id: review-service
               uri: lb://review-service
@@ -81,11 +86,15 @@ spring:
                 - Path=/review/**
               filters:
                 - name: KeycloakHeader
+                - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_FIRST
 
             - id: chat-service
               uri: lb:ws://chat-service
               predicates:
                 - Path=/message/**,/ws/**
+              filters:
+                - name: KeycloakHeader
+                - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_FIRST
 
 
 

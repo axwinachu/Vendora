@@ -35,4 +35,11 @@ public class KafkaConfig {
                 .replicas(1)
                 .build();
     }
+    @Bean
+    public NewTopic bookingOtpGeneratedTopic() {
+        return TopicBuilder.name("booking.otp.generated")
+                .partitions(1)
+                .replicas(1)
+                .build();
+    }
 }

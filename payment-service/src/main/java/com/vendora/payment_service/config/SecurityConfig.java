@@ -23,8 +23,8 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/payments/create").hasRole("CUSTOMER")
-                        .requestMatchers(HttpMethod.GET,"/payments/*").hasRole("CUSTOMER")
+                        .requestMatchers(HttpMethod.POST, "/payments/create").hasRole("USER")
+                        .requestMatchers(HttpMethod.GET,"/payments/*").hasRole("USER")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(headerAuthFilter, UsernamePasswordAuthenticationFilter.class)

@@ -56,7 +56,8 @@ export default function ProviderChatPage() {
   const location = useLocation();
 
   const profile = getProviderProfile();
-  const myId = profile.id;
+  const myId   = profile.id;
+  const myRole = "PROVIDER";                      // role for WS auth
   const myName = profile.userName || "Provider";
 
   const [activeId, setActiveId] = useState(routeUserId || null);
@@ -73,14 +74,37 @@ export default function ProviderChatPage() {
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
 
-  // Keep activeId accessible inside socket callback without stale closure
   const activeIdRef = useRef(activeId);
+
+  // Sync activeId with URL param routeUserId
   useEffect(() => {
-    activeIdRef.current = activeId;
-  }, [activeId]);
+    setActiveId(routeUserId || null);
+    activeIdRef.current = routeUserId || null;
+    if (routeUserId && routeUserId !== location.state?.userId) {
+       setActiveName(location.state?.userName || "");
+       setActiveImage(location.state?.userImage || null);
+    }
+  }, [routeUserId, location.state]);
+
+  // Fetch customer info if name is missing (refresh/direct link)
+  useEffect(() => {
+    if (!activeId || activeName || !myId) return;
+
+    fetch(`http://localhost:8888/user/${activeId}`, {
+       headers: { "X-User-Id": myId }
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data) {
+          setActiveName(data.userName || activeId);
+          setActiveImage(data.profilePhotoUrl || null);
+        }
+      })
+      .catch(() => {});
+  }, [activeId, activeName, myId]);
 
   /* ─── SOCKET ────────────────────────────────────────────── */
-  const { sendMessage, connected } = useChatSocket(myId, (incoming) => {
+  const { sendMessage, connected } = useChatSocket(myId, myRole, (incoming) => {
     const peerId =
       incoming.senderId === myId ? incoming.receiverId : incoming.senderId;
 
@@ -111,16 +135,19 @@ export default function ProviderChatPage() {
   useEffect(() => {
     if (!myId) return;
 
-    fetch(`http://localhost:8888/message/conversations/${myId}`)
-      .then((r) => r.json())
+    // Correct endpoint: no path variable — userId comes from X-User-Id header
+    fetch("http://localhost:8888/message/conversations", {
+      headers: { "X-User-Id": myId, "Content-Type": "application/json" },
+    })
+      .then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
       .then((data) => {
         setConvs(
           data.map((c) => ({
-            id: c.peerId,
-            name: c.peerName || c.peerId,
-            image: c.peerImage,
+            id:      c.peerId,
+            name:    c.peerName  || c.peerId,
+            image:   c.peerImage || null,
             lastMsg: c.lastMessage,
-            lastTs: c.lastTimestamp,
+            lastTs:  c.lastTimestamp,
           }))
         );
       })
@@ -134,9 +161,12 @@ export default function ProviderChatPage() {
     setLoading(true);
 
     // activeId = customer (userId), myId = provider (providerId)
-    fetch(`http://localhost:8888/message/${activeId}/${myId}`)
-      .then((r) => r.json())
-      .then((data) => setMessages(data || []))
+    // X-User-Id header is required by MessageController for authorization check
+    fetch(`http://localhost:8888/message/${activeId}/${myId}`, {
+      headers: { "X-User-Id": myId, "Content-Type": "application/json" },
+    })
+      .then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then((data) => setMessages(Array.isArray(data) ? data : []))
       .catch((err) => console.error("Failed to load messages:", err))
       .finally(() => setLoading(false));
   }, [myId, activeId]);

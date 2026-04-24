@@ -20,9 +20,9 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.
                 authorizeHttpRequests(auth-> auth
-                        .requestMatchers(HttpMethod.POST,"/review/add").hasRole("CUSTOMER")
-                        .requestMatchers(HttpMethod.GET,"/review/provider/*").hasAnyRole("CUSTOMER","PROVIDER","ADMIN")
-                        .requestMatchers(HttpMethod.GET,"/review/provider/*/average").hasAnyRole("CUSTOMER","PROVIDER","ADMIN")
+                        .requestMatchers(HttpMethod.POST,"/review/add").hasRole("USER")
+                        .requestMatchers(HttpMethod.GET,"/review/provider/*").hasAnyRole("USER","PROVIDER","ADMIN")
+                        .requestMatchers(HttpMethod.GET,"/review/provider/*/average").hasAnyRole("USER","PROVIDER","ADMIN")
                         .anyRequest().authenticated()
                 ).
                 addFilterBefore(headAuthFilter, UsernamePasswordAuthenticationFilter.class).

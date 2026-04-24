@@ -14,8 +14,13 @@ export default function ProviderDetailPage() {
   const [activeImg, setActiveImg] = useState(0);
   const [bookingProvider, setBookingProvider] = useState(null);
   const handleChat = () => {
-  navigate(`/chat/${provider.userId}`);
-};
+    navigate(`/chat/${provider.userId}`, {
+      state: {
+        userName:  provider.businessName,
+        userImage: provider.profilePhotoUrl || null,
+      },
+    });
+  };
   // Touch swipe support
   const touchStartX = useRef(null);
 

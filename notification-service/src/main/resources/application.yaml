@@ -17,11 +17,32 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username:
-    password:
+    username: aswindev2465@gmail.com
+    password: iyakblfaxoyfwdmc
+
     properties:
-      mail.smtp.auth: true
-      mail.smtp.starttls:enable: true
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          ssl:
+            trust: smtp.gmail.com
 
 
+notification:
+  from-email: aswindev2465@gmail.com
+  from-name: vendora
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
+  instance:
+    prefer-ip-address: true
+    ip-address: 127.0.0.1
+    hostname: 127.0.0.1
+    instance-id: ${spring.application.name}:${server.port}
 

@@ -5,19 +5,33 @@ import com.vendora.notification_service.event.BookingEvent;
 public class EmailTemplates {
 
     public static String subject(BookingEvent e) {
-        return switch (e.getEventType()) {
-            case "booking.created"   -> "Booking Request Received – #" + shortId(e.getBookingId());
-            case "booking.confirmed" -> "Your Booking is Confirmed – #" + shortId(e.getBookingId());
-            case "booking.rejected"  -> "Booking Request Declined – #" + shortId(e.getBookingId());
-            case "booking.completed" -> "Service Completed – #" + shortId(e.getBookingId());
-            case "booking.cancelled" -> "Booking Cancelled – #" + shortId(e.getBookingId());
-            default -> "Booking Update – #" + shortId(e.getBookingId());
-        };
+
+        String type = e.getEventType();
+
+        if ("booking.created".equals(type))
+            return "Booking Request Received – #" + shortId(e.getBookingId());
+
+        if ("booking.confirmed".equals(type))
+            return "Your Booking is Confirmed – #" + shortId(e.getBookingId());
+
+        if ("booking.rejected".equals(type))
+            return "Booking Request Declined – #" + shortId(e.getBookingId());
+
+        if ("booking.completed".equals(type))
+            return "Service Completed – #" + shortId(e.getBookingId());
+
+        if ("booking.cancelled".equals(type))
+            return "Booking Cancelled – #" + shortId(e.getBookingId());
+
+        return "Booking Update – #" + shortId(e.getBookingId());
     }
 
     public static String customerBody(BookingEvent e) {
-        return switch (e.getEventType()) {
-            case "booking.created" -> """
+
+        String type = e.getEventType();
+
+        if ("booking.created".equals(type)) {
+            return """
                 Hi %s,
 
                 Your booking request has been submitted.
@@ -33,8 +47,10 @@ public class EmailTemplates {
                 """.formatted(e.getCustomerName(), e.getServiceCategory(),
                     e.getProviderName(), e.getScheduledDate(),
                     e.getScheduledTime(), e.getAddress());
+        }
 
-            case "booking.confirmed" -> """
+        if ("booking.confirmed".equals(type)) {
+            return """
                 Hi %s,
 
                 %s has confirmed your booking!
@@ -47,8 +63,10 @@ public class EmailTemplates {
                 """.formatted(e.getCustomerName(), e.getProviderName(),
                     e.getServiceCategory(), e.getScheduledDate(),
                     e.getScheduledTime(), e.getAddress());
+        }
 
-            case "booking.rejected" -> """
+        if ("booking.rejected".equals(type)) {
+            return """
                 Hi %s,
 
                 Unfortunately %s could not accept your request.
@@ -61,8 +79,10 @@ public class EmailTemplates {
                 Thanks, BookingApp
                 """.formatted(e.getCustomerName(), e.getProviderName(),
                     e.getServiceCategory(), e.getScheduledDate(), e.getScheduledTime());
+        }
 
-            case "booking.completed" -> """
+        if ("booking.completed".equals(type)) {
+            return """
                 Hi %s,
 
                 Your service has been completed!
@@ -75,8 +95,10 @@ public class EmailTemplates {
                 Thanks, BookingApp
                 """.formatted(e.getCustomerName(),
                     e.getServiceCategory(), e.getProviderName());
+        }
 
-            case "booking.cancelled" -> """
+        if ("booking.cancelled".equals(type)) {
+            return """
                 Hi %s,
 
                 Your booking has been cancelled.
@@ -88,14 +110,17 @@ public class EmailTemplates {
                 Thanks, BookingApp
                 """.formatted(e.getCustomerName(), e.getServiceCategory(),
                     e.getScheduledDate(), e.getScheduledTime(), reason(e));
+        }
 
-            default -> "Your booking status updated to: " + e.getStatus();
-        };
+        return "Your booking status updated to: " + e.getStatus();
     }
 
     public static String providerBody(BookingEvent e) {
-        return switch (e.getEventType()) {
-            case "booking.created" -> """
+
+        String type = e.getEventType();
+
+        if ("booking.created".equals(type)) {
+            return """
                 Hi %s,
 
                 New booking request from %s.
@@ -110,8 +135,10 @@ public class EmailTemplates {
                 """.formatted(e.getProviderName(), e.getCustomerName(),
                     e.getServiceCategory(), e.getScheduledDate(),
                     e.getScheduledTime(), e.getAddress());
+        }
 
-            case "booking.completed" -> """
+        if ("booking.completed".equals(type)) {
+            return """
                 Hi %s,
 
                 You completed the service for %s.
@@ -123,8 +150,10 @@ public class EmailTemplates {
                 Thanks, BookingApp
                 """.formatted(e.getProviderName(),
                     e.getCustomerName(), e.getServiceCategory());
+        }
 
-            case "booking.cancelled" -> """
+        if ("booking.cancelled".equals(type)) {
+            return """
                 Hi %s,
 
                 Booking from %s has been cancelled.
@@ -137,18 +166,20 @@ public class EmailTemplates {
                 """.formatted(e.getProviderName(), e.getCustomerName(),
                     e.getServiceCategory(), e.getScheduledDate(),
                     e.getScheduledTime(), reason(e));
+        }
 
-            // confirmed + rejected: provider took the action, no email needed
-            default -> null;
-        };
+        return null;
     }
 
     private static String reason(BookingEvent e) {
         return (e.getCancellationReason() != null && !e.getCancellationReason().isBlank())
-                ? e.getCancellationReason() : "Not specified";
+                ? e.getCancellationReason()
+                : "Not specified";
     }
 
     private static String shortId(String id) {
-        return id != null && id.length() > 8 ? "..." + id.substring(id.length() - 8) : id;
+        return id != null && id.length() > 8
+                ? "..." + id.substring(id.length() - 8)
+                : id;
     }
 }
